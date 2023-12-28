@@ -75,10 +75,7 @@ class Mermaid:
         for table in self.metadata.tables.values():
             output += self._table(table)
 
-        relationships = ""
-
         for table in self.metadata.tables.values():
-            foreign_tables = set([])
             for column in table.columns.values():
                 if len(column.foreign_keys) > 0:
                     output += self._relationships(column)

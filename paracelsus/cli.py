@@ -9,6 +9,7 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from typing_extensions import Annotated
 
+from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
 
 app = typer.Typer()
@@ -20,6 +21,20 @@ def get_module(mymodule_path: Path):
     diagram_module = importlib.util.module_from_spec(spec)
     loader.exec_module(diagram_module)
     return diagram_module
+
+
+def get_metaclass(working_dir: Path):
+    sys.path.append(working_dir)
+    os.chdir(working_dir)
+    conf_path = working_dir / "alembic.ini"
+
+    if not conf_path.exists():
+        raise ValueError("Conf path doesn't exist")
+
+    alembic_cfg = Config(conf_path)
+    script = ScriptDirectory.from_config(alembic_cfg)
+    env_path = working_dir / script.dir / "diagram.py"
+    return get_module(env_path)
 
 
 @app.command()
@@ -59,19 +74,18 @@ def mermaid(
         Path, typer.Argument(file_okay=False, dir_okay=True, resolve_path=True, exists=True)
     ] = os.getcwd()
 ):
-    sys.path.append(working_dir)
-    os.chdir(working_dir)
-    conf_path = working_dir / "alembic.ini"
-
-    if not conf_path.exists():
-        raise ValueError("Conf path doesn't exist")
-
-    alembic_cfg = Config(conf_path)
-    script = ScriptDirectory.from_config(alembic_cfg)
-    env_path = working_dir / script.dir / "diagram.py"
-    module = get_module(env_path)
-
+    module = get_metaclass(working_dir)
     typer.echo(str(Mermaid(module.target_metadata)))
+
+
+@app.command()
+def dot(
+    working_dir: Annotated[
+        Path, typer.Argument(file_okay=False, dir_okay=True, resolve_path=True, exists=True)
+    ] = os.getcwd()
+):
+    module = get_metaclass(working_dir)
+    typer.echo(str(Dot(module.target_metadata)))
 
 
 @app.command()
