@@ -3,6 +3,8 @@ from typing import List
 import pydot
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
+from . import utils
+
 
 class Dot:
     metadata: MetaData
@@ -18,45 +20,41 @@ class Dot:
             node.set_shape("none")
             node.set_margin("0")
             self.graph.add_node(node)
-
-            for column in table.columns.values():
+            for column in table.columns:
                 for foreign_key in column.foreign_keys:
                     key_parts = foreign_key.target_fullname.split(".")
                     left_table = key_parts[0]
                     left_column = key_parts[1]
                     edge = pydot.Edge(left_table, table.name)
+                    edge.set_label(column.name)
+                    edge.set_dir("both")
 
+                    edge.set_arrowhead("none")
                     if not column.unique:
                         edge.set_arrowhead("crow")
-                    else:
-                        edge.set_arrowhead("none")
 
                     l_column = self.metadata.tables[left_table].columns[left_column]
+                    edge.set_arrowtail("none")
                     if not l_column.unique and not l_column.primary_key:
                         edge.set_arrowtail("crow")
-                    else:
-                        edge.set_arrowtail("none")
-
-                    edge.set_label(column.name)
-
-                    edge.set_dir("both")
-                    # "edge [arrowhead=crow, arrowtail=none, dir=both]"
 
                     self.graph.add_edge(edge)
 
     def _table_label(self, table: Table) -> str:
         column_output = ""
-        for column in table.columns.values():
-            relationship = ""
+        columns = sorted(table.columns, key=utils.column_key_function)
+        for column in columns:
+            attributes = set([])
             if column.primary_key:
-                if len(column.foreign_keys) > 0:
-                    relationship += " PK,FK"
-                else:
-                    relationship += " PK"
-            elif len(column.foreign_keys) > 0:
-                relationship += " FK"
+                attributes.add("Primary Key")
 
-            column_output += f'        <tr><td align="left">{column.type}</td><td align="left">{column.name}</td><td>{relationship}</td></tr>\n'
+            if len(column.foreign_keys) > 0:
+                attributes.add("Foreign Key")
+
+            if column.unique:
+                attributes.add("Unique")
+
+            column_output += f'        <tr><td align="left">{column.type}</td><td align="left">{column.name}</td><td>{", ".join(attributes)}</td></tr>\n'
 
         return f"""<
     <table border="0" cellborder="1" cellspacing="0" cellpadding="4">

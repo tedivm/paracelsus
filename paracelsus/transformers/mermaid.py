@@ -2,6 +2,8 @@ from typing import List
 
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
+from . import utils
+
 
 class Mermaid:
     metadata: MetaData
@@ -12,7 +14,8 @@ class Mermaid:
     def _table(self, table: Table) -> str:
         output = f"\t{table.name}"
         output += " {\n"
-        for column in table.columns:
+        columns = sorted(table.columns, key=utils.column_key_function)
+        for column in columns:
             output += self._column(column)
         output += "\t}\n\n"
         return output
