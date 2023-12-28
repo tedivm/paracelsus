@@ -1,0 +1,24 @@
+name: PyTest
+
+on:
+  push:
+  pull_request:
+
+env:
+  COLUMNS: 120
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version-file: .python-version
+
+      - name: Install Dependencies
+        run: make install
+
+      - name: Run Tests
+        run: make pytest

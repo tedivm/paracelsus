@@ -1,0 +1,76 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=67.0", "setuptools_scm[toml]>=7.1"]
+
+[project]
+authors = [{"name" = "Robert Hafner"}]
+dependencies = [
+  "alembic",
+  "pydantic~=2.0",
+  "pydantic-settings",
+  "typer",
+]
+description = ""
+dynamic = ["version"]
+license = {"file" = "LICENSE"}
+name = "paracelsus"
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "build",
+  "dapperdata",
+  "glom",
+  "isort",
+  "mypy",
+  "pip-tools",
+  "pytest",
+  "pytest-cov",
+  "pytest-pretty",
+  "ruamel.yaml",
+  "toml-sort",
+]
+
+[project.scripts]
+paracelsus = "paracelsus.cli:app"
+
+[tool.black]
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | \.env
+    | _build
+    | buck-out
+    | build
+    | dist
+    | paracelsus/_version.py
+  )
+)
+'''
+line-length = 120
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.isort]
+profile = "black"
+skip = [".venv"]
+src_paths = ["paracelsus", "tests"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"]}
+
+[tool.setuptools.package-data]
+paracelsus = ["py.typed"]
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools_scm]
+fallback_version = "0.0.0-dev"
+write_to = "paracelsus/_version.py"
