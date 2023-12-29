@@ -7,7 +7,7 @@ authors = [{"name" = "Robert Hafner"}]
 dependencies = [
   "pydot",
   "sqlalchemy",
-  "typer"
+  "typer",
 ]
 description = ""
 dynamic = ["version"]
@@ -27,13 +27,14 @@ dev = [
   "pytest-pretty",
   "ruamel.yaml",
   "ruff",
-  "toml-sort"
+  "toml-sort",
 ]
 
 [project.scripts]
 paracelsus = "paracelsus.cli:app"
 
 [tool.ruff]
+exclude = [".venv", "./paracelsus/_version.py"]
 line-length = 120
 
 [tool.setuptools.dynamic]
