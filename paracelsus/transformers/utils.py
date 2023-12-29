@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy.sql.schema import Column
 
 

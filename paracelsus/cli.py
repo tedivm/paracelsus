@@ -177,7 +177,7 @@ def inject(
             fp.write(new_content)
 
 
-@app.command(help=f"Display the current installed version of paracelsus.")
+@app.command(help="Display the current installed version of paracelsus.")
 def version():
     from . import _version
 

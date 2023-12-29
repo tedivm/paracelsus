@@ -1,7 +1,5 @@
-from typing import List
-
 import pydot
-from sqlalchemy.sql.schema import Column, MetaData, Table
+from sqlalchemy.sql.schema import MetaData, Table
 
 from . import utils
 

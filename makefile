@@ -51,19 +51,19 @@ pre-commit:
 	pre-commit install
 
 #
-# Formatting
+# Chores
 #
 
-.PHONY: pretty
-pretty: black_fixes isort_fixes dapperdata_fixes tomlsort_fixes
+.PHONY: chores
+chores: black_fixes dapperdata_fixes tomlsort_fixes
+
+.PHONY: ruff_fix
+ruff_fix:
+	$(PYTHON) -m ruff check --fix
 
 .PHONY: black_fixes
 black_fixes:
-	$(PYTHON) -m black .
-
-.PHONY: isort_fixes
-isort_fixes:
-	$(PYTHON) -m isort .
+	$(PYTHON) -m ruff format .
 
 .PHONY: dapperdata_fixes
 dapperdata_fixes:
@@ -78,7 +78,7 @@ tomlsort_fixes:
 #
 
 .PHONY: tests
-tests: install pytest isort_check black_check mypy_check dapperdata_check tomlsort_check
+tests: install pytest ruff_check black_check mypy_check dapperdata_check tomlsort_check
 
 .PHONY: pytest
 pytest:
@@ -88,13 +88,13 @@ pytest:
 pytest_loud:
 	$(PYTHON) -m pytest -s --cov=./${PACKAGE_SLUG} --cov-report=term-missing tests
 
-.PHONY: isort_check
-isort_check:
-	$(PYTHON) -m isort --check-only .
+.PHONY: ruff_check
+ruff_check:
+	$(PYTHON) -m ruff check
 
 .PHONY: black_check
 black_check:
-	$(PYTHON) -m black . --check
+	$(PYTHON) -m ruff format . --check
 
 .PHONY: mypy_check
 mypy_check:
