@@ -55,11 +55,11 @@ pre-commit:
 #
 
 .PHONY: chores
-chores: black_fixes dapperdata_fixes tomlsort_fixes
+chores: ruff_fixes black_fixes dapperdata_fixes tomlsort_fixes
 
-.PHONY: ruff_fix
+.PHONY: ruff_fixes
 ruff_fix:
-	$(PYTHON) -m ruff check --fix
+	$(PYTHON) -m ruff . --fix
 
 .PHONY: black_fixes
 black_fixes:
