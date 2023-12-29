@@ -1,8 +1,10 @@
 import importlib
 import os
 import sys
+from enum import Enum
 from pathlib import Path
 from pprint import pprint
+from typing import List
 
 import typer
 from alembic.config import Config
@@ -14,78 +16,62 @@ from .transformers.mermaid import Mermaid
 
 app = typer.Typer()
 
-
-def get_module(mymodule_path: Path):
-    loader = importlib.machinery.SourceFileLoader("diagram_module", str(mymodule_path))
-    spec = importlib.util.spec_from_loader("diagram_module", loader)
-    diagram_module = importlib.util.module_from_spec(spec)
-    loader.exec_module(diagram_module)
-    return diagram_module
+transformers = {"mmd": Mermaid, "mermaid": Mermaid, "dot": Dot}
 
 
-def get_metaclass(working_dir: Path):
-    sys.path.append(working_dir)
-    os.chdir(working_dir)
-    conf_path = working_dir / "alembic.ini"
-
-    if not conf_path.exists():
-        raise ValueError("Conf path doesn't exist")
-
-    alembic_cfg = Config(conf_path)
-    script = ScriptDirectory.from_config(alembic_cfg)
-    env_path = working_dir / script.dir / "diagram.py"
-    return get_module(env_path)
+class Formats(str, Enum):
+    mermaid = "mermaid"
+    mmd = "mmd"
+    dot = "dot"
 
 
 @app.command()
-def test(
-    working_dir: Annotated[
-        Path, typer.Argument(file_okay=False, dir_okay=True, resolve_path=True, exists=True)
-    ] = os.getcwd()
+def graph(
+    base_class_path: Annotated[str, typer.Argument(help="The SQLAlchemy base class used by the database to graph.")],
+    import_module: Annotated[
+        List[str],
+        typer.Option(
+            help="Module, typically an SQL Model, to import. Modules that end in :* will act as `from module import *`"
+        ),
+    ] = [],
+    python_dir: Annotated[
+        List[Path],
+        typer.Option(
+            help="Paths to add to the `PYTHON_PATH` for module lookup.",
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+            exists=True,
+        ),
+    ] = [],
+    format: Annotated[
+        Formats, typer.Option(help="The file format to output the generated graph to.")
+    ] = Formats.mermaid,
 ):
-    typer.echo(working_dir)
-    sys.path.append(working_dir)
-    os.chdir(working_dir)
-    typer.echo(sys.path)
+    for dir in python_dir:
+        sys.path.append(dir)
 
-    conf_path = working_dir / "alembic.ini"
+    # Import the base class so the metadata class can be extracted from it.
+    module_path, class_name = base_class_path.split(":", 2)
+    base_module = importlib.import_module(module_path)
+    base_class = getattr(base_module, class_name)
+    metadata = base_class.metadata
 
-    if not conf_path.exists():
-        raise ValueError("Conf path doesn't exist")
+    # The modules holding the model classes have to be imported to get put in the
+    # metaclass model registry.
+    for module in import_module:
+        if ":*" in module:
+            exec(f"from {module[:-2]} import *")
+        else:
+            importlib.import_module(module)
 
-    alembic_cfg = Config(conf_path)
-    script = ScriptDirectory.from_config(alembic_cfg)
-    env_path = working_dir / script.dir / "diagram.py"
-    module = get_module(env_path)
+    # Grab a transformer.
+    if format.value not in transformers:
+        raise ValueError(f"Unknown Format: {format.value}")
+    transformer = transformers[format.value]
 
-    for name, table in module.target_metadata.tables.items():
-        typer.echo(name)
-        pprint(table.__dict__)
-        typer.echo("\n")
-        for column in table.columns:
-            pprint(column.__dict__)
-            typer.echo(f"\t{column.name} - {column.type}")
-        typer.echo("\n")
-
-
-@app.command()
-def mermaid(
-    working_dir: Annotated[
-        Path, typer.Argument(file_okay=False, dir_okay=True, resolve_path=True, exists=True)
-    ] = os.getcwd()
-):
-    module = get_metaclass(working_dir)
-    typer.echo(str(Mermaid(module.target_metadata)))
-
-
-@app.command()
-def dot(
-    working_dir: Annotated[
-        Path, typer.Argument(file_okay=False, dir_okay=True, resolve_path=True, exists=True)
-    ] = os.getcwd()
-):
-    module = get_metaclass(working_dir)
-    typer.echo(str(Dot(module.target_metadata)))
+    # Output the graph structure.
+    typer.echo(str(transformer(metadata)))
 
 
 @app.command()

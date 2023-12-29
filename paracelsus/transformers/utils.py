@@ -1,9 +1,9 @@
 from typing import List
 
-from sqlalchemy.sql.schema import Column, MetaData, Table
+from sqlalchemy.sql.schema import Column
 
 
-def column_key_function(column: Column):
+def column_sort_key(column: Column):
     if column.primary_key:
         prefix = "01"
     elif len(column.foreign_keys):

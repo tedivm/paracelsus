@@ -14,7 +14,7 @@ class Mermaid:
     def _table(self, table: Table) -> str:
         output = f"\t{table.name}"
         output += " {\n"
-        columns = sorted(table.columns, key=utils.column_key_function)
+        columns = sorted(table.columns, key=utils.column_sort_key)
         for column in columns:
             output += self._column(column)
         output += "\t}\n\n"

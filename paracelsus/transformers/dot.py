@@ -42,7 +42,7 @@ class Dot:
 
     def _table_label(self, table: Table) -> str:
         column_output = ""
-        columns = sorted(table.columns, key=utils.column_key_function)
+        columns = sorted(table.columns, key=utils.column_sort_key)
         for column in columns:
             attributes = set([])
             if column.primary_key:
