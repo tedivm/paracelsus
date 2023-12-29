@@ -5,9 +5,6 @@ requires = ["setuptools>=67.0", "setuptools_scm[toml]>=7.1"]
 [project]
 authors = [{"name" = "Robert Hafner"}]
 dependencies = [
-  "alembic",
-  "pydantic~=2.0",
-  "pydantic-settings",
   "pydot",
   "typer",
 ]
