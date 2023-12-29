@@ -36,7 +36,7 @@ def get_graph_string(
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
     for dir in python_dir:
-        sys.path.append(dir)
+        sys.path.append(str(dir))
 
     # Import the base class so the metadata class can be extracted from it.
     # The metadata class is passed to the transformer.
@@ -66,7 +66,10 @@ def get_graph_string(
 
 @app.command(help="Create the graph structure and print it to stdout.")
 def graph(
-    base_class_path: Annotated[str, typer.Argument(help="The SQLAlchemy base class used by the database to graph.")],
+    base_class_path: Annotated[
+        str,
+        typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
+    ],
     import_module: Annotated[
         List[str],
         typer.Option(
@@ -89,7 +92,10 @@ def graph(
 ):
     typer.echo(
         get_graph_string(
-            base_class_path=base_class_path, import_module=import_module, python_dir=python_dir, format=format.value
+            base_class_path=base_class_path,
+            import_module=import_module,
+            python_dir=python_dir,
+            format=format.value,
         )
     )
 
@@ -106,7 +112,10 @@ def inject(
             exists=True,
         ),
     ],
-    base_class_path: Annotated[str, typer.Argument(help="The SQLAlchemy base class used by the database to graph.")],
+    base_class_path: Annotated[
+        str,
+        typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
+    ],
     replace_begin_tag: Annotated[
         str,
         typer.Option(help=""),
@@ -137,18 +146,24 @@ def inject(
     check: Annotated[
         bool,
         typer.Option(
-            "--check", help="Perform a dry run and return a success code of 0 if there are no changes or 1 otherwise."
+            "--check",
+            help="Perform a dry run and return a success code of 0 if there are no changes or 1 otherwise.",
         ),
     ] = False,
 ):
     # Generate Graph
     graph = get_graph_string(
-        base_class_path=base_class_path, import_module=import_module, python_dir=python_dir, format=format.value
+        base_class_path=base_class_path,
+        import_module=import_module,
+        python_dir=python_dir,
+        format=format.value,
     )
+
+    comment_format = transformers[format].comment_format  # type: ignore
 
     # Convert Graph to Injection String
     graph_piece = f"""{replace_begin_tag}
-```{transformers[format].comment_format}
+```{comment_format}
 {graph}
 ```
 {replace_end_tag}"""

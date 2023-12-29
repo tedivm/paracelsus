@@ -1,4 +1,4 @@
-import pydot
+import pydot  # type: ignore
 from sqlalchemy.sql.schema import MetaData, Table
 
 from . import utils
