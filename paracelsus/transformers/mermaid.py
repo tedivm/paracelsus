@@ -6,6 +6,7 @@ from . import utils
 
 
 class Mermaid:
+    comment_format: str = "mermaid"
     metadata: MetaData
 
     def __init__(self, metaclass: MetaData) -> None:

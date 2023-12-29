@@ -7,6 +7,7 @@ from . import utils
 
 
 class Dot:
+    comment_format: str = "dot"
     metadata: MetaData
     graph: pydot.Dot
 
@@ -54,7 +55,7 @@ class Dot:
             if column.unique:
                 attributes.add("Unique")
 
-            column_output += f'        <tr><td align="left">{column.type}</td><td align="left">{column.name}</td><td>{", ".join(attributes)}</td></tr>\n'
+            column_output += f'        <tr><td align="left">{column.type}</td><td align="left">{column.name}</td><td>{", ".join(sorted(attributes))}</td></tr>\n'
 
         return f"""<
     <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
