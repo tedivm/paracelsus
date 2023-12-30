@@ -161,3 +161,4 @@ cython_debug/
 
 output.png
 test.md
+paracelsus/_version.py
