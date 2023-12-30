@@ -10,6 +10,7 @@ on:
 
 env:
   PUBLISH_TO_PYPI: true
+  SETUOTOOLS_SCM_DEBUG: 1
 
 jobs:
   pypi:
