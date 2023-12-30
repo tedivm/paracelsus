@@ -23,9 +23,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Fetch all history for all tags and branches
-        run: git fetch --prune --unshallow
-
       - uses: actions/setup-python@v5
         with:
           python-version-file: .python-version
