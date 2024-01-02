@@ -1,4 +1,3 @@
-import importlib
 import re
 import sys
 from enum import Enum
@@ -7,6 +6,8 @@ from typing import List
 
 import typer
 from typing_extensions import Annotated
+
+from paracelsus.adapters import get_adapter_for_base_class
 
 from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
@@ -38,22 +39,7 @@ def get_graph_string(
     for dir in python_dir:
         sys.path.append(str(dir))
 
-    # Import the base class so the metadata class can be extracted from it.
-    # The metadata class is passed to the transformer.
-    module_path, class_name = base_class_path.split(":", 2)
-    base_module = importlib.import_module(module_path)
-    base_class = getattr(base_module, class_name)
-    metadata = base_class.metadata
-
-    # The modules holding the model classes have to be imported to get put in the metaclass model registry.
-    # These modules aren't actually used in any way, so they are discarded.
-    # They are also imported in scope of this function to prevent namespace pollution.
-    for module in import_module:
-        if ":*" in module:
-            # Sure, execs are gross, but this is the only way to dynamically import wildcards.
-            exec(f"from {module[:-2]} import *")
-        else:
-            importlib.import_module(module)
+    adapter = get_adapter_for_base_class(base_class_path=base_class_path, import_module=import_module)
 
     # Grab a transformer.
     if format not in transformers:
@@ -61,7 +47,7 @@ def get_graph_string(
     transformer = transformers[format]
 
     # Save the graph structure to string.
-    return str(transformer(metadata))
+    return str(transformer(adapter))
 
 
 @app.command(help="Create the graph structure and print it to stdout.")

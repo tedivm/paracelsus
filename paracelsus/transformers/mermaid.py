@@ -1,19 +1,17 @@
-from sqlalchemy.sql.schema import Column, MetaData, Table
-
-from . import utils
+from paracelsus.adapters import Column, ModelAdapter, Table
 
 
 class Mermaid:
     comment_format: str = "mermaid"
-    metadata: MetaData
+    adapter: ModelAdapter
 
-    def __init__(self, metaclass: MetaData) -> None:
-        self.metadata = metaclass
+    def __init__(self, adapter: ModelAdapter) -> None:
+        self.adapter = adapter
 
     def _table(self, table: Table) -> str:
         output = f"\t{table.name}"
         output += " {\n"
-        columns = sorted(table.columns, key=utils.column_sort_key)
+        columns = sorted(table.columns.values(), key=self.adapter.column_sort_key)
         for column in columns:
             output += self._column(column)
         output += "\t}\n\n"
@@ -63,7 +61,7 @@ class Mermaid:
             left_column = key_parts[1]
             left_operand = ""
 
-            lcolumn = self.metadata.tables[left_table].columns[left_column]
+            lcolumn = self.adapter.tables()[left_table].columns[left_column]
             if lcolumn.unique or lcolumn.primary_key:
                 left_operand = "||"
             else:
@@ -74,10 +72,10 @@ class Mermaid:
 
     def __str__(self) -> str:
         output = "erDiagram\n"
-        for table in self.metadata.tables.values():
+        for table in self.adapter.tables().values():
             output += self._table(table)
 
-        for table in self.metadata.tables.values():
+        for table in self.adapter.tables().values():
             for column in table.columns.values():
                 if len(column.foreign_keys) > 0:
                     output += self._relationships(column)

@@ -84,6 +84,10 @@ tests: install pytest ruff_check black_check mypy_check dapperdata_check tomlsor
 pytest:
 	$(PYTHON) -m pytest --cov=./${PACKAGE_SLUG} --cov-report=term-missing tests
 
+.PHONY: pytest_check
+pytest_check:
+	$(PYTHON) -m pytest
+
 .PHONY: pytest_loud
 pytest_loud:
 	$(PYTHON) -m pytest -s --cov=./${PACKAGE_SLUG} --cov-report=term-missing tests
