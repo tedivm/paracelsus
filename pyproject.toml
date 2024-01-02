@@ -25,13 +25,21 @@ dev = [
   "pytest",
   "pytest-cov",
   "pytest-pretty",
+  "pytest-xdist",
   "ruamel.yaml",
   "ruff",
   "toml-sort"
 ]
+django = [
+  "django"
+]
 
 [project.scripts]
 paracelsus = "paracelsus.cli:app"
+
+[[tool.mypy.overrides]]
+module = "django.*"
+ignore_missing_imports = true
 
 [tool.ruff]
 exclude = [".venv", "./paracelsus/_version.py"]

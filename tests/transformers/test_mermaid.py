@@ -1,8 +1,10 @@
+from paracelsus.adapters.sqlalchemy import SQLAlchemyModelAdapter
 from paracelsus.transformers.mermaid import Mermaid
 
 
 def test_mermaid(metaclass):
-    mermaid = Mermaid(metaclass=metaclass)
+    adapter = SQLAlchemyModelAdapter(metaclass)
+    mermaid = Mermaid(adapter=adapter)
     graph_string = str(mermaid)
 
     assert "users {" in graph_string

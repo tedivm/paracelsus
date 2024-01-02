@@ -1,25 +1,24 @@
 import pydot  # type: ignore
-from sqlalchemy.sql.schema import MetaData, Table
 
-from . import utils
+from paracelsus.adapters import ModelAdapter, Table
 
 
 class Dot:
     comment_format: str = "dot"
-    metadata: MetaData
+    adapter: ModelAdapter
     graph: pydot.Dot
 
-    def __init__(self, metaclass: MetaData) -> None:
-        self.metadata = metaclass
+    def __init__(self, adapter: ModelAdapter) -> None:
+        self.adapter = adapter
         self.graph = pydot.Dot("database", graph_type="graph")
 
-        for table in self.metadata.tables.values():
+        for table in self.adapter.tables().values():
             node = pydot.Node(name=table.name)
             node.set_label(self._table_label(table))
             node.set_shape("none")
             node.set_margin("0")
             self.graph.add_node(node)
-            for column in table.columns:
+            for column in table.columns.values():
                 for foreign_key in column.foreign_keys:
                     key_parts = foreign_key.target_fullname.split(".")
                     left_table = key_parts[0]
@@ -32,7 +31,7 @@ class Dot:
                     if not column.unique:
                         edge.set_arrowhead("crow")
 
-                    l_column = self.metadata.tables[left_table].columns[left_column]
+                    l_column = self.adapter.tables()[left_table].columns[left_column]
                     edge.set_arrowtail("none")
                     if not l_column.unique and not l_column.primary_key:
                         edge.set_arrowtail("crow")
@@ -41,7 +40,7 @@ class Dot:
 
     def _table_label(self, table: Table) -> str:
         column_output = ""
-        columns = sorted(table.columns, key=utils.column_sort_key)
+        columns = sorted(table.columns.values(), key=self.adapter.column_sort_key)
         for column in columns:
             attributes = set([])
             if column.primary_key:
