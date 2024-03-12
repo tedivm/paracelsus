@@ -11,12 +11,12 @@ class Mermaid:
         self.metadata = metaclass
 
     def _table(self, table: Table) -> str:
-        output = f"\t{table.name}"
+        output = f"  {table.name}"
         output += " {\n"
         columns = sorted(table.columns, key=utils.column_sort_key)
         for column in columns:
             output += self._column(column)
-        output += "\t}\n\n"
+        output += "  }\n\n"
         return output
 
     def _column(self, column: Column) -> str:
@@ -44,7 +44,7 @@ class Mermaid:
         if len(options) > 0:
             column_str += f' "{",".join(options)}"'
 
-        return f"\t\t{column_str}\n"
+        return f"    {column_str}\n"
 
     def _relationships(self, column: Column) -> str:
         output = ""
@@ -69,7 +69,7 @@ class Mermaid:
             else:
                 left_operand = "}o"
 
-            output += f"\t{left_table} {left_operand}--{right_operand} {right_table} : {column_name}\n"
+            output += f"  {left_table} {left_operand}--{right_operand} {right_table} : {column_name}\n"
         return output
 
     def __str__(self) -> str:
