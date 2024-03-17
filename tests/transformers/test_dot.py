@@ -1,8 +1,10 @@
+from paracelsus.adapters.sqlalchemy import SQLAlchemyModelAdapter
 from paracelsus.transformers.dot import Dot
 
 
 def test_mermaid(metaclass):
-    mermaid = Dot(metaclass=metaclass)
+    adapter = SQLAlchemyModelAdapter(metaclass)
+    mermaid = Dot(adapter=adapter)
     graph_string = str(mermaid)
 
     assert '<tr><td colspan="3" bgcolor="lightblue"><b>users</b></td></tr>' in graph_string
