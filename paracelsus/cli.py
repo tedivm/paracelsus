@@ -1,4 +1,5 @@
 import importlib
+import os
 import re
 import sys
 from enum import Enum
@@ -35,6 +36,7 @@ def get_graph_string(
     format: str,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
+    sys.path.append(str(os.getcwd()))
     for dir in python_dir:
         sys.path.append(str(dir))
 
