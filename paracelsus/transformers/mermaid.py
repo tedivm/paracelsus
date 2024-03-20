@@ -30,12 +30,11 @@ class Mermaid:
                 column_str += " PK"
         elif len(column.foreign_keys) > 0:
             column_str += " FK"
-            options.append(f"Foreign key references {column.table.name}")
         elif column.unique:
             column_str += " UK"
 
         if column.comment:
-            options.append(f"{column.comment}")
+            options.append(column.comment)
 
         if column.nullable:
             options.append("nullable")

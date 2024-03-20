@@ -4,7 +4,6 @@ from paracelsus.transformers.mermaid import Mermaid
 def test_mermaid(metaclass):
     mermaid = Mermaid(metaclass=metaclass)
     graph_string = str(mermaid)
-    print(graph_string)
 
     assert "users {" in graph_string
     assert "posts {" in graph_string
@@ -15,6 +14,6 @@ def test_mermaid(metaclass):
     assert "users ||--o{ comments : author" in graph_string
 
     assert "CHAR(32) author FK" in graph_string
-    assert 'CHAR(32) post FK "Foreign key references comments,nullable"' in graph_string
+    assert 'CHAR(32) post FK "nullable"' in graph_string
     assert 'BOOLEAN live "True if post is published,nullable"' in graph_string
     assert "DATETIME created" in graph_string
