@@ -35,7 +35,7 @@ class Mermaid:
             column_str += " UK"
 
         if column.comment:
-            column_str += f' "{column.comment}"'
+            options.append(f"{column.comment}")
 
         if column.nullable:
             options.append("nullable")

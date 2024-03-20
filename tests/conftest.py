@@ -23,7 +23,7 @@ def metaclass():
         id = mapped_column(Uuid, primary_key=True, default=uuid4())
         author = mapped_column(ForeignKey(User.id), nullable=False)
         created = mapped_column(DateTime, nullable=False, default=datetime.utcnow())
-        live = mapped_column(Boolean, default=False)
+        live = mapped_column(Boolean, default=False, comment="True if post is published")
         content = mapped_column(Text, default="")
 
     class Comment(Base):
