@@ -20,6 +20,7 @@ class Mermaid:
         return output
 
     def _column(self, column: Column) -> str:
+        options = []
         column_str = f"{column.type} {column.name}"
 
         if column.primary_key:
@@ -29,14 +30,14 @@ class Mermaid:
                 column_str += " PK"
         elif len(column.foreign_keys) > 0:
             column_str += " FK"
+        elif column.unique:
+            column_str += " UK"
 
-        options = []
+        if column.comment:
+            options.append(column.comment)
 
         if column.nullable:
             options.append("nullable")
-
-        if column.unique:
-            options.append("unique")
 
         if column.index:
             options.append("indexed")

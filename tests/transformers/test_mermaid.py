@@ -15,4 +15,5 @@ def test_mermaid(metaclass):
 
     assert "CHAR(32) author FK" in graph_string
     assert 'CHAR(32) post FK "nullable"' in graph_string
+    assert 'BOOLEAN live "True if post is published,nullable"' in graph_string
     assert "DATETIME created" in graph_string
