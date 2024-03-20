@@ -29,14 +29,16 @@ class Mermaid:
                 column_str += " PK"
         elif len(column.foreign_keys) > 0:
             column_str += " FK"
+        elif column.unique:
+            column_str += " UK"
+
+        if column.comment:
+            column_str += f" \"{column.comment}\""
 
         options = []
 
         if column.nullable:
             options.append("nullable")
-
-        if column.unique:
-            options.append("unique")
 
         if column.index:
             options.append("indexed")
