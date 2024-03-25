@@ -1,0 +1,5 @@
+[tool.paracelsus]
+base = "example.base:Base"
+imports = [
+  "example.models"
+]
