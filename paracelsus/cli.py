@@ -1,25 +1,16 @@
-import importlib
-import os
 import re
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List, Optional
 
 import typer
 from typing_extensions import Annotated
 
-from .transformers.dot import Dot
-from .transformers.mermaid import Mermaid
+from .graph import get_graph_string, transformers
+from .pyproject import get_pyproject_settings
 
 app = typer.Typer()
-
-transformers = {
-    "mmd": Mermaid,
-    "mermaid": Mermaid,
-    "dot": Dot,
-    "gv": Dot,
-}
 
 
 class Formats(str, Enum):
@@ -29,49 +20,22 @@ class Formats(str, Enum):
     gv = "gv"
 
 
-def get_graph_string(
-    base_class_path: str,
-    import_module: List[str],
-    python_dir: List[Path],
-    format: str,
-) -> str:
-    # Update the PYTHON_PATH to allow more module imports.
-    sys.path.append(str(os.getcwd()))
-    for dir in python_dir:
-        sys.path.append(str(dir))
-
-    # Import the base class so the metadata class can be extracted from it.
-    # The metadata class is passed to the transformer.
-    module_path, class_name = base_class_path.split(":", 2)
-    base_module = importlib.import_module(module_path)
-    base_class = getattr(base_module, class_name)
-    metadata = base_class.metadata
-
-    # The modules holding the model classes have to be imported to get put in the metaclass model registry.
-    # These modules aren't actually used in any way, so they are discarded.
-    # They are also imported in scope of this function to prevent namespace pollution.
-    for module in import_module:
-        if ":*" in module:
-            # Sure, execs are gross, but this is the only way to dynamically import wildcards.
-            exec(f"from {module[:-2]} import *")
-        else:
-            importlib.import_module(module)
-
-    # Grab a transformer.
-    if format not in transformers:
-        raise ValueError(f"Unknown Format: {format}")
-    transformer = transformers[format]
-
-    # Save the graph structure to string.
-    return str(transformer(metadata))
+def get_base_class(base_class_path: str | None, settings=Dict[str, Any] | None) -> str:
+    if base_class_path:
+        return base_class_path
+    if not settings:
+        raise ValueError("`base_class_path` argument must be passed if no pyproject.toml file is present.")
+    if "base" not in settings:
+        raise ValueError("`base_class_path` argument must be passed if not defined in pyproject.toml.")
+    return settings["base"]
 
 
 @app.command(help="Create the graph structure and print it to stdout.")
 def graph(
     base_class_path: Annotated[
-        str,
+        Optional[str],
         typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
-    ],
+    ] = None,
     import_module: Annotated[
         List[str],
         typer.Option(
@@ -92,9 +56,15 @@ def graph(
         Formats, typer.Option(help="The file format to output the generated graph to.")
     ] = Formats.mermaid,
 ):
+    settings = get_pyproject_settings()
+    base_class = get_base_class(base_class_path, settings)
+
+    if settings and "imports" in settings:
+        import_module.extend(settings["imports"])
+
     typer.echo(
         get_graph_string(
-            base_class_path=base_class_path,
+            base_class_path=base_class,
             import_module=import_module,
             python_dir=python_dir,
             format=format.value,

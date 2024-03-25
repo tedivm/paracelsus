@@ -2,11 +2,24 @@
 
 Paracelsus generates Entity Relationship Diagrams by reading your SQLAlchemy models.
 
-* ERDs can be injected into documentation as [Mermaid Diagrams](https://mermaid.js.org/).
-* Paracelsus can be run in CICD to check that databases are up to date.
-* ERDs can be created as files in either [Dot](https://graphviz.org/doc/info/lang.html) or Mermaid format.
-* DOT files can be used to generate SVG or PNG files, or edited in [GraphViz](https://graphviz.org/) or other editors.
+- [Paracelsus](#paracelsus)
+  - [Features](#features)
+  - [Usage](#usage)
+    - [Installation](#installation)
+    - [Basic CLI Usage](#basic-cli-usage)
+    - [Importing Models](#importing-models)
+    - [Generate Mermaid Diagrams](#generate-mermaid-diagrams)
+    - [Inject Mermaid Diagrams](#inject-mermaid-diagrams)
+    - [Creating Images](#creating-images)
+    - [pyproject.toml](#pyprojecttoml)
+  - [Sponsorship](#sponsorship)
 
+## Features
+
+- ERDs can be injected into documentation as [Mermaid Diagrams](https://mermaid.js.org/).
+- Paracelsus can be run in CICD to check that databases are up to date.
+- ERDs can be created as files in either [Dot](https://graphviz.org/doc/info/lang.html) or Mermaid format.
+- DOT files can be used to generate SVG or PNG files, or edited in [GraphViz](https://graphviz.org/) or other editors.
 
 ## Usage
 
@@ -29,9 +42,9 @@ paracelsus --help
 
 It has three commands:
 
-* `version` outputs the version of the currently installed `paracelsus` cli.
-* `graph` generates a graph and outputs it to `stdout`.
-* `inject` inserts the graph into a markdown file.
+- `version` outputs the version of the currently installed `paracelsus` cli.
+- `graph` generates a graph and outputs it to `stdout`.
+- `inject` inserts the graph into a markdown file.
 
 ### Importing Models
 
@@ -160,6 +173,18 @@ To create a PNG file:
 
 ![Alt text](./docs/example.png "a title")
 
+
+### pyproject.toml
+
+The settings for your project can be saved directly in the `pyprojects.toml` file of your project.
+
+```toml
+[tool.paracelsus]
+base = "example.base:Base"
+imports = [
+  "example.models"
+]
+```
 
 ## Sponsorship
 
