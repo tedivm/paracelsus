@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -43,4 +45,7 @@ def metaclass():
 
 @pytest.fixture
 def package_path():
-    return Path(os.path.dirname(os.path.realpath(__file__))) / "assets"
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        yield Path(package_path)
