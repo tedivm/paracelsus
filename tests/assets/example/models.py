@@ -1,10 +1,12 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import mapped_column
 
 from .base import Base
+
+UTC = timezone.utc
 
 
 class User(Base):

@@ -1,13 +1,15 @@
 import os
 import shutil
 import tempfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import declarative_base, mapped_column
+
+UTC = timezone.utc
 
 
 @pytest.fixture
