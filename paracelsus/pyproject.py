@@ -3,6 +3,11 @@ import tomllib
 from pathlib import Path
 from typing import Any, Dict
 
+try:
+    import tomllib
+except:
+    import toml as tomllib
+
 
 def get_pyproject_settings(dir: Path = Path(os.getcwd())) -> Dict[str, Any] | None:
     pyproject = dir / "pyproject.toml"
