@@ -11,6 +11,7 @@ from sqlalchemy.orm import declarative_base, mapped_column
 
 UTC = timezone.utc
 
+
 @pytest.fixture
 def metaclass():
     Base = declarative_base()

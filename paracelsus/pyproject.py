@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 try:
     import tomllib
-except:
+except:  # noqa: E722
     import toml as tomllib
 
 
