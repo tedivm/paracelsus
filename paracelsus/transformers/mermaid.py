@@ -1,6 +1,10 @@
+import logging
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
 from . import utils
+
+
+logger = logging.getLogger(__name__)
 
 
 class Mermaid:
@@ -63,6 +67,15 @@ class Mermaid:
             left_table = key_parts[0]
             left_column = key_parts[1]
             left_operand = ""
+
+            # We don't add the connection to the fk table if the latter
+            # is not included in our graph.
+            if left_table not in self.metadata.tables:
+                logger.warning(
+                    f"Table '{right_table}.{column_name}' is a foreign key to '{left_table}' "
+                    "which is not included in the graph, skipping the connection."
+                )
+                continue
 
             lcolumn = self.metadata.tables[left_table].columns[left_column]
             if lcolumn.unique or lcolumn.primary_key:

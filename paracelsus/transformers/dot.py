@@ -1,7 +1,11 @@
 import pydot  # type: ignore
+import logging
 from sqlalchemy.sql.schema import MetaData, Table
 
 from . import utils
+
+
+logger = logging.getLogger(__name__)
 
 
 class Dot:
@@ -24,6 +28,16 @@ class Dot:
                     key_parts = foreign_key.target_fullname.split(".")
                     left_table = key_parts[0]
                     left_column = key_parts[1]
+
+                    # We don't add the connection to the fk table if the latter
+                    # is not included in our graph.
+                    if left_table not in self.metadata.tables:
+                        logger.warning(
+                            f"Table '{table}.{column.name}' is a foreign key to '{left_table}' "
+                            "which is not included in the graph, skipping the connection."
+                        )
+                        continue
+
                     edge = pydot.Edge(left_table, table.name)
                     edge.set_label(column.name)
                     edge.set_dir("both")
