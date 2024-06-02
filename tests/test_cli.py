@@ -24,6 +24,44 @@ def test_graph(package_path):
     mermaid_assert(result.stdout)
 
 
+def test_graph_with_exclusion(package_path):
+    result = runner.invoke(
+        app,
+        [
+            "graph",
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--exclude-tables",
+            "comments",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "posts {" in result.stdout
+    assert "comments {" not in result.stdout
+
+
+def test_graph_with_inclusion(package_path):
+    result = runner.invoke(
+        app,
+        [
+            "graph",
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--include-tables",
+            "comments",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "posts {" not in result.stdout
+    assert "comments {" in result.stdout
+
+
 def test_inject_check(package_path):
     result = runner.invoke(
         app,

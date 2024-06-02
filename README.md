@@ -71,6 +71,25 @@ This is equivalent to running this style of python import:
 from example_app.models import *
 ```
 
+### Include or Exclude tables
+
+After importing the models, it is possible to select a subset of those models by using the `--exlude-tables` and `--include-tables` options.
+These are mutually exclusive options, the user can only provide inclusions or exclusions:
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.*" \
+  --exclude-tables "comments"
+```
+
+This is equivalent to:
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.*" \
+  --include-tables "users"
+  --include-tables "posts"
+```
 
 ### Generate Mermaid Diagrams
 
