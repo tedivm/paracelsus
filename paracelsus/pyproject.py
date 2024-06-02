@@ -8,13 +8,13 @@ except:  # noqa: E722
     import toml as tomllib  # type: ignore
 
 
-def get_pyproject_settings(dir: Path = Path(os.getcwd())) -> Dict[str, Any] | None:
+def get_pyproject_settings(dir: Path = Path(os.getcwd())) -> Dict[str, Any]:
     pyproject = dir / "pyproject.toml"
 
     if not pyproject.exists():
-        return None
+        return {}
 
     with open(pyproject, "rb") as f:
         data = tomllib.loads(f.read().decode())
 
-    return data.get("tool", {}).get("paracelsus", None)
+    return data.get("tool", {}).get("paracelsus", {})

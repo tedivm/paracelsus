@@ -106,5 +106,11 @@ def filter_metadata(
     filtered_metadata = MetaData()
     for tablename, table in metadata.tables.items():
         if tablename in include_tables:
-            table.tometadata(filtered_metadata)
+            if hasattr(table, "to_metadata"):
+                # to_metadata is the new way to do this, but it's only available in newer versions of SQLAlchemy.
+                table = table.to_metadata(filtered_metadata)
+            else:
+                # tometadata is deprecated, but we still need to support it for older versions of SQLAlchemy.
+                table = table.tometadata(filtered_metadata)
+
     return filtered_metadata

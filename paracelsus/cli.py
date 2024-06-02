@@ -67,15 +67,15 @@ def graph(
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
 
-    if settings and "imports" in settings:
+    if "imports" in settings:
         import_module.extend(settings["imports"])
 
     typer.echo(
         get_graph_string(
             base_class_path=base_class,
             import_module=import_module,
-            include_tables=set(include_tables),
-            exclude_tables=set(exclude_tables),
+            include_tables=set(include_tables + settings.get("include_tables", [])),
+            exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
             python_dir=python_dir,
             format=format.value,
         )
@@ -141,12 +141,16 @@ def inject(
         ),
     ] = False,
 ):
+    settings = get_pyproject_settings()
+    if "imports" in settings:
+        import_module.extend(settings["imports"])
+
     # Generate Graph
     graph = get_graph_string(
         base_class_path=base_class_path,
         import_module=import_module,
-        include_tables=set(include_tables),
-        exclude_tables=set(exclude_tables),
+        include_tables=set(include_tables + settings.get("include_tables", [])),
+        exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
         python_dir=python_dir,
         format=format.value,
     )
