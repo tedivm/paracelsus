@@ -205,6 +205,19 @@ imports = [
 ]
 ```
 
+This also works with excludes and includes.
+
+```toml
+[tool.paracelsus]
+base = "example.base:Base"
+imports = [
+  "example.models"
+]
+exclude_tables = [
+  "comments"
+]
+```
+
 ## Sponsorship
 
 This project is developed by [Robert Hafner](https://blog.tedivm.com) If you find this project useful please consider sponsoring me using Github!

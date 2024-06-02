@@ -11,4 +11,4 @@ def test_pyproject(package_path):
 
 def test_pyproject_none():
     settings = get_pyproject_settings()
-    assert settings is None
+    assert settings == {}
