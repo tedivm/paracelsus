@@ -2,7 +2,9 @@ import importlib
 import os
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Set
+
+from sqlalchemy import MetaData
 
 from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
@@ -16,8 +18,11 @@ transformers = {
 
 
 def get_graph_string(
+    *,
     base_class_path: str,
     import_module: List[str],
+    include_tables: Set[str],
+    exclude_tables: Set[str],
     python_dir: List[Path],
     format: str,
 ) -> str:
@@ -48,5 +53,58 @@ def get_graph_string(
         raise ValueError(f"Unknown Format: {format}")
     transformer = transformers[format]
 
+    # Keep only the tables which were included / not-excluded
+    include_tables = resolve_included_tables(
+        include_tables=include_tables, exclude_tables=exclude_tables, all_tables=set(metadata.tables.keys())
+    )
+    filtered_metadata = filter_metadata(metadata=metadata, include_tables=include_tables)
+
     # Save the graph structure to string.
-    return str(transformer(metadata))
+    return str(transformer(filtered_metadata))
+
+
+def resolve_included_tables(
+    include_tables: Set[str],
+    exclude_tables: Set[str],
+    all_tables: Set[str],
+) -> Set[str]:
+    """Resolves the final set of tables to include in the graph.
+
+    Given sets of inclusions and exclusions and the set of all tables we define
+    the following cases are:
+    - Empty inclusion and empty exclusion -> include all tables.
+    - Empty inclusion and some exclusions -> include all tables except the ones in the exclusion set.
+    - Some inclusions and empty exclusion -> make sure tables in the inclusion set are present in
+        all tables then include the tables in the inclusion set.
+    - Some inclusions and some exclusions -> not resolvable, an error is raised.
+    """
+    match len(include_tables), len(exclude_tables):
+        case 0, 0:
+            return all_tables
+        case 0, int():
+            return all_tables - exclude_tables
+        case int(), 0:
+            if not include_tables.issubset(all_tables):
+                non_existent_tables = include_tables - all_tables
+                raise ValueError(
+                    f"Some tables to include ({non_existent_tables}) don't exist"
+                    "withinthe found tables ({all_tables})."
+                )
+            return include_tables
+        case _:
+            raise ValueError(
+                f"Only one or none of include_tables ({include_tables}) or exclude_tables"
+                f"({exclude_tables}) can contain values."
+            )
+
+
+def filter_metadata(
+    metadata: MetaData,
+    include_tables: Set[str],
+) -> MetaData:
+    """Create a subset of the metadata based on the tables to include."""
+    filtered_metadata = MetaData()
+    for tablename, table in metadata.tables.items():
+        if tablename in include_tables:
+            table.tometadata(filtered_metadata)
+    return filtered_metadata

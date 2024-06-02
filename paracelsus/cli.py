@@ -42,6 +42,14 @@ def graph(
             help="Module, typically an SQL Model, to import. Modules that end in :* will act as `from module import *`"
         ),
     ] = [],
+    exclude_tables: Annotated[
+        List[str],
+        typer.Option(help="List of tables that are excluded from the graph"),
+    ] = [],
+    include_tables: Annotated[
+        List[str],
+        typer.Option(help="List of tables that are included in the graph"),
+    ] = [],
     python_dir: Annotated[
         List[Path],
         typer.Option(
@@ -66,6 +74,8 @@ def graph(
         get_graph_string(
             base_class_path=base_class,
             import_module=import_module,
+            include_tables=set(include_tables),
+            exclude_tables=set(exclude_tables),
             python_dir=python_dir,
             format=format.value,
         )
@@ -102,6 +112,14 @@ def inject(
             help="Module, typically an SQL Model, to import. Modules that end in :* will act as `from module import *`"
         ),
     ] = [],
+    exclude_tables: Annotated[
+        List[str],
+        typer.Option(help="List of tables that are excluded from the graph"),
+    ] = [],
+    include_tables: Annotated[
+        List[str],
+        typer.Option(help="List of tables that are included in the graph"),
+    ] = [],
     python_dir: Annotated[
         List[Path],
         typer.Option(
@@ -127,6 +145,8 @@ def inject(
     graph = get_graph_string(
         base_class_path=base_class_path,
         import_module=import_module,
+        include_tables=set(include_tables),
+        exclude_tables=set(exclude_tables),
         python_dir=python_dir,
         format=format.value,
     )

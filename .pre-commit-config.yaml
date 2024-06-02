@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: make pytest_check
+        entry: make pytest
         language: system
         pass_filenames: false
       - id: ruff
