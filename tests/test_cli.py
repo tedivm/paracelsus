@@ -1,3 +1,5 @@
+import pytest
+
 from typer.testing import CliRunner
 
 from paracelsus.cli import app
@@ -10,6 +12,17 @@ runner = CliRunner()
 def test_graph(package_path):
     result = runner.invoke(
         app,
+        ["graph", "example.base:Base", "--import-module", "example.models", "--python-dir", str(package_path)],
+    )
+
+    assert result.exit_code == 0
+    mermaid_assert(result.stdout)
+
+
+@pytest.mark.parametrize("column_sort_arg", ["key-based", "preserve-order"])
+def test_graph_column_sort(package_path, column_sort_arg):
+    result = runner.invoke(
+        app,
         [
             "graph",
             "example.base:Base",
@@ -17,6 +30,8 @@ def test_graph(package_path):
             "example.models",
             "--python-dir",
             str(package_path),
+            "--column-sort",
+            column_sort_arg,
         ],
     )
 
@@ -90,6 +105,29 @@ def test_inject(package_path):
             "example.models",
             "--python-dir",
             str(package_path),
+        ],
+    )
+    assert result.exit_code == 0
+
+    with open(package_path / "README.md") as fp:
+        readme = fp.read()
+        mermaid_assert(readme)
+
+
+@pytest.mark.parametrize("column_sort_arg", ["key-based", "preserve-order"])
+def test_inject_column_sort(package_path, column_sort_arg):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--column-sort",
+            column_sort_arg,
         ],
     )
     assert result.exit_code == 0

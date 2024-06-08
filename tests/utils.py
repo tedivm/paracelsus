@@ -11,3 +11,17 @@ def mermaid_assert(output: str) -> None:
     assert 'CHAR(32) post FK "nullable"' in output
     assert 'BOOLEAN live "True if post is published,nullable"' in output
     assert "DATETIME created" in output
+
+
+def dot_assert(output: str) -> None:
+    assert '<tr><td colspan="3" bgcolor="lightblue"><b>users</b></td></tr>' in output
+    assert '<tr><td colspan="3" bgcolor="lightblue"><b>posts</b></td></tr>' in output
+    assert '<tr><td colspan="3" bgcolor="lightblue"><b>comments</b></td></tr>' in output
+
+    assert "users -- posts  [arrowhead=crow, arrowtail=none, dir=both, label=author];" in output
+    assert "posts -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=post];" in output
+    assert "users -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=author];" in output
+
+    assert '<tr><td align="left">CHAR(32)</td><td align="left">author</td><td>Foreign Key</td></tr>' in output
+    assert '<tr><td align="left">CHAR(32)</td><td align="left">post</td><td>Foreign Key</td></tr>' in output
+    assert '<tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>' in output

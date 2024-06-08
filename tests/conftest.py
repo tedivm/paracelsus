@@ -27,8 +27,8 @@ def metaclass():
         __tablename__ = "posts"
 
         id = mapped_column(Uuid, primary_key=True, default=uuid4())
-        author = mapped_column(ForeignKey(User.id), nullable=False)
         created = mapped_column(DateTime, nullable=False, default=datetime.now(UTC))
+        author = mapped_column(ForeignKey(User.id), nullable=False)
         live = mapped_column(Boolean, default=False, comment="True if post is published")
         content = mapped_column(Text, default="")
 
@@ -36,9 +36,9 @@ def metaclass():
         __tablename__ = "comments"
 
         id = mapped_column(Uuid, primary_key=True, default=uuid4())
+        created = mapped_column(DateTime, nullable=False, default=datetime.now(UTC))
         post = mapped_column(Uuid, ForeignKey(Post.id), default=uuid4())
         author = mapped_column(ForeignKey(User.id), nullable=False)
-        created = mapped_column(DateTime, nullable=False, default=datetime.now(UTC))
         live = mapped_column(Boolean, default=False)
         content = mapped_column(Text, default="")
 
@@ -51,3 +51,74 @@ def package_path():
     with tempfile.TemporaryDirectory() as package_path:
         shutil.copytree(template_path, package_path, dirs_exist_ok=True)
         yield Path(package_path)
+
+
+@pytest.fixture()
+def mermaid_full_string_preseve_column_sort() -> str:
+    return """erDiagram
+  users {
+    CHAR(32) id PK
+    VARCHAR(100) display_name "nullable"
+    DATETIME created
+  }
+
+  posts {
+    CHAR(32) id PK
+    DATETIME created
+    CHAR(32) author FK
+    BOOLEAN live "True if post is published,nullable"
+    TEXT content "nullable"
+  }
+
+  comments {
+    CHAR(32) id PK
+    DATETIME created
+    CHAR(32) post FK "nullable"
+    CHAR(32) author FK
+    BOOLEAN live "nullable"
+    TEXT content "nullable"
+  }
+
+  users ||--o{ posts : author
+  posts ||--o{ comments : post
+  users ||--o{ comments : author
+"""
+
+
+@pytest.fixture()
+def dot_full_string_preseve_column_sort() -> str:
+    return """graph database {
+users [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+        <tr><td colspan="3" bgcolor="lightblue"><b>users</b></td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">id</td><td>Primary Key</td></tr>
+        <tr><td align="left">VARCHAR(100)</td><td align="left">display_name</td><td></td></tr>
+        <tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>
+    </table>
+>, margin=0, shape=none];
+posts [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+        <tr><td colspan="3" bgcolor="lightblue"><b>posts</b></td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">id</td><td>Primary Key</td></tr>
+        <tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">author</td><td>Foreign Key</td></tr>
+        <tr><td align="left">BOOLEAN</td><td align="left">live</td><td></td></tr>
+        <tr><td align="left">TEXT</td><td align="left">content</td><td></td></tr>
+    </table>
+>, margin=0, shape=none];
+users -- posts  [arrowhead=crow, arrowtail=none, dir=both, label=author];
+comments [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+        <tr><td colspan="3" bgcolor="lightblue"><b>comments</b></td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">id</td><td>Primary Key</td></tr>
+        <tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">post</td><td>Foreign Key</td></tr>
+        <tr><td align="left">CHAR(32)</td><td align="left">author</td><td>Foreign Key</td></tr>
+        <tr><td align="left">BOOLEAN</td><td align="left">live</td><td></td></tr>
+        <tr><td align="left">TEXT</td><td align="left">content</td><td></td></tr>
+    </table>
+>, margin=0, shape=none];
+posts -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=post];
+users -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=author];
+}
+"""
