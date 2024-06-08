@@ -2,7 +2,7 @@ import pydot  # type: ignore
 import logging
 from sqlalchemy.sql.schema import MetaData, Table
 
-from . import utils
+from .utils import sort_columns
 
 
 logger = logging.getLogger(__name__)
@@ -12,10 +12,12 @@ class Dot:
     comment_format: str = "dot"
     metadata: MetaData
     graph: pydot.Dot
+    column_sort: str
 
-    def __init__(self, metaclass: MetaData) -> None:
+    def __init__(self, metaclass: MetaData, column_sort: str) -> None:
         self.metadata = metaclass
         self.graph = pydot.Dot("database", graph_type="graph")
+        self.column_sort = column_sort
 
         for table in self.metadata.tables.values():
             node = pydot.Node(name=table.name)
@@ -55,7 +57,7 @@ class Dot:
 
     def _table_label(self, table: Table) -> str:
         column_output = ""
-        columns = sorted(table.columns, key=utils.column_sort_key)
+        columns = sort_columns(table_columns=table.columns, column_sort=self.column_sort)
         for column in columns:
             attributes = set([])
             if column.primary_key:

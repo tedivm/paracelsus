@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
-from . import utils
+from .utils import sort_columns
 
 
 logger = logging.getLogger(__name__)
@@ -10,14 +10,16 @@ logger = logging.getLogger(__name__)
 class Mermaid:
     comment_format: str = "mermaid"
     metadata: MetaData
+    column_sort: str
 
-    def __init__(self, metaclass: MetaData) -> None:
+    def __init__(self, metaclass: MetaData, column_sort: str) -> None:
         self.metadata = metaclass
+        self.column_sort = column_sort
 
     def _table(self, table: Table) -> str:
         output = f"  {table.name}"
         output += " {\n"
-        columns = sorted(table.columns, key=utils.column_sort_key)
+        columns = sort_columns(table_columns=table.columns, column_sort=self.column_sort)
         for column in columns:
             output += self._column(column)
         output += "  }\n\n"

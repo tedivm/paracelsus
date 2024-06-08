@@ -25,6 +25,7 @@ def get_graph_string(
     exclude_tables: Set[str],
     python_dir: List[Path],
     format: str,
+    column_sort: str,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
     sys.path.append(str(os.getcwd()))
@@ -60,7 +61,7 @@ def get_graph_string(
     filtered_metadata = filter_metadata(metadata=metadata, include_tables=include_tables)
 
     # Save the graph structure to string.
-    return str(transformer(filtered_metadata))
+    return str(transformer(filtered_metadata, column_sort))
 
 
 def resolve_included_tables(
