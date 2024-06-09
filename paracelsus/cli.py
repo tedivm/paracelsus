@@ -12,6 +12,8 @@ from .pyproject import get_pyproject_settings
 
 app = typer.Typer()
 
+PYPROJECT_SETTINGS = get_pyproject_settings()
+
 
 class Formats(str, Enum):
     mermaid = "mermaid"
@@ -23,6 +25,12 @@ class Formats(str, Enum):
 class ColumnSorts(str, Enum):
     key_based = "key-based"
     preserve = "preserve-order"
+
+
+if "column_sort" in PYPROJECT_SETTINGS:
+    SORT_DEFAULT = ColumnSorts(PYPROJECT_SETTINGS["column_sort"]).value
+else:
+    SORT_DEFAULT = ColumnSorts.key_based.value
 
 
 def get_base_class(base_class_path: str | None, settings: Dict[str, Any] | None) -> str:
@@ -67,13 +75,13 @@ def graph(
     ] = [],
     format: Annotated[
         Formats, typer.Option(help="The file format to output the generated graph to.")
-    ] = Formats.mermaid,
+    ] = Formats.mermaid.value,  # type: ignore # Typer will fail to render the help message, but this code works.
     column_sort: Annotated[
         ColumnSorts,
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = ColumnSorts.key_based,
+    ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
@@ -144,7 +152,7 @@ def inject(
     ] = [],
     format: Annotated[
         Formats, typer.Option(help="The file format to output the generated graph to.")
-    ] = Formats.mermaid,
+    ] = Formats.mermaid.value,  # type: ignore # Typer will fail to render the help message, but this code works.
     check: Annotated[
         bool,
         typer.Option(
@@ -157,7 +165,7 @@ def inject(
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = ColumnSorts.key_based,
+    ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
