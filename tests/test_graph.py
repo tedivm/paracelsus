@@ -75,7 +75,6 @@ def test_get_graph_string_with_include(package_path):
         python_dir=[package_path],
         column_sort="key-based",
         format="mermaid",
-
     )
     assert "posts {" in graph_string
     assert "users ||--o{ posts" not in graph_string
