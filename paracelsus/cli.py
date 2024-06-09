@@ -1,6 +1,6 @@
 import re
 import sys
-from enum import StrEnum
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -13,14 +13,14 @@ from .pyproject import get_pyproject_settings
 app = typer.Typer()
 
 
-class Formats(StrEnum):
+class Formats(str, Enum):
     mermaid = "mermaid"
     mmd = "mmd"
     dot = "dot"
     gv = "gv"
 
 
-class ColumnSorts(StrEnum):
+class ColumnSorts(str, Enum):
     key_based = "key-based"
     preserve = "preserve-order"
 
