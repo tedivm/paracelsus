@@ -75,13 +75,13 @@ def graph(
     ] = [],
     format: Annotated[
         Formats, typer.Option(help="The file format to output the generated graph to.")
-    ] = Formats.mermaid.value,
+    ] = Formats.mermaid.value, # type: ignore # Typer will fail to render the help message, but this code works.
     column_sort: Annotated[
         ColumnSorts,
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = SORT_DEFAULT,
+    ] = SORT_DEFAULT, # type: ignore # Typer will fail to render the help message, but this code works.
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
@@ -152,7 +152,7 @@ def inject(
     ] = [],
     format: Annotated[
         Formats, typer.Option(help="The file format to output the generated graph to.")
-    ] = Formats.mermaid.value,
+    ] = Formats.mermaid.value, # type: ignore # Typer will fail to render the help message, but this code works.
     check: Annotated[
         bool,
         typer.Option(
@@ -165,7 +165,7 @@ def inject(
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = SORT_DEFAULT,
+    ] = SORT_DEFAULT, # type: ignore # Typer will fail to render the help message, but this code works.
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
