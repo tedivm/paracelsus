@@ -10,7 +10,7 @@ dependencies = [
   "typer",
   "toml; python_version < '3.11'"
 ]
-description = ""
+description = "Visualize SQLAlchemy Databases using Mermaid or Dot Diagrams."
 dynamic = ["version"]
 license = {"file" = "LICENSE"}
 name = "paracelsus"
