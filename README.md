@@ -94,7 +94,7 @@ paracelsus graph example_app.models.base:Base \
 ### Specify Column Sort Order
 
 By default Paracelsus will sort the columns in all models such as primary keys are first, foreign keys are next and all other
-columns are sorted alphabetically by name. 
+columns are sorted alphabetically by name.
 
 ```bash
 paracelsus graph example_app.models.base:Base \
@@ -231,7 +231,7 @@ imports = [
 ]
 ```
 
-This also works with excludes and includes.
+This also allows users to set excludes, includes, and column sorting.
 
 ```toml
 [tool.paracelsus]
@@ -242,6 +242,7 @@ imports = [
 exclude_tables = [
   "comments"
 ]
+column_sort = "preserve-order"
 ```
 
 ## Sponsorship
