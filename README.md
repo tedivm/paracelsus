@@ -91,6 +91,32 @@ paracelsus graph example_app.models.base:Base \
   --include-tables "posts"
 ```
 
+### Specify Column Sort Order
+
+By default Paracelsus will sort the columns in all models such as primary keys are first, foreign keys are next and all other
+columns are sorted alphabetically by name. 
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.users" \
+```
+
+produces the same results as:
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.users" \
+  --column-sort key-based
+```
+
+Pass the --column-sort option to change this behavior. To preserve the order of fields present in the models use "preserve-order":
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.users" \
+  --column-sort preserve-order
+```
+
 ### Generate Mermaid Diagrams
 
 

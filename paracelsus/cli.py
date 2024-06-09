@@ -20,7 +20,12 @@ class Formats(str, Enum):
     gv = "gv"
 
 
-def get_base_class(base_class_path: str | None, settings=Dict[str, Any] | None) -> str:
+class ColumnSorts(str, Enum):
+    key_based = "key-based"
+    preserve = "preserve-order"
+
+
+def get_base_class(base_class_path: str | None, settings: Dict[str, Any] | None) -> str:
     if base_class_path:
         return base_class_path
     if not settings:
@@ -63,6 +68,12 @@ def graph(
     format: Annotated[
         Formats, typer.Option(help="The file format to output the generated graph to.")
     ] = Formats.mermaid,
+    column_sort: Annotated[
+        ColumnSorts,
+        typer.Option(
+            help="Specifies the method of sorting columns in diagrams.",
+        ),
+    ] = ColumnSorts.key_based,
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
@@ -78,6 +89,7 @@ def graph(
             exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
             python_dir=python_dir,
             format=format.value,
+            column_sort=column_sort,
         )
     )
 
@@ -140,6 +152,12 @@ def inject(
             help="Perform a dry run and return a success code of 0 if there are no changes or 1 otherwise.",
         ),
     ] = False,
+    column_sort: Annotated[
+        ColumnSorts,
+        typer.Option(
+            help="Specifies the method of sorting columns in diagrams.",
+        ),
+    ] = ColumnSorts.key_based,
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
@@ -153,6 +171,7 @@ def inject(
         exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
         python_dir=python_dir,
         format=format.value,
+        column_sort=column_sort,
     )
 
     comment_format = transformers[format].comment_format  # type: ignore
