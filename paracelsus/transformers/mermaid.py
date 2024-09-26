@@ -85,7 +85,7 @@ class Mermaid:
             else:
                 left_operand = "}o"
 
-            output += f"  {left_table} {left_operand}--{right_operand} {right_table} : {column_name}\n"
+            output += f"  {left_table.split('.')[-1]} {left_operand}--{right_operand} {right_table} : {column_name}\n"
         return output
 
     def __str__(self) -> str:

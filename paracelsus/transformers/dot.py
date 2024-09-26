@@ -40,7 +40,7 @@ class Dot:
                         )
                         continue
 
-                    edge = pydot.Edge(left_table, table.name)
+                    edge = pydot.Edge(left_table.split('.')[-1], table.name)
                     edge.set_label(column.name)
                     edge.set_dir("both")
 
