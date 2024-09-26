@@ -66,7 +66,7 @@ class Mermaid:
 
         for foreign_key in column.foreign_keys:
             key_parts = foreign_key.target_fullname.split(".")
-            left_table = '.'.join(key_parts[:-1])
+            left_table = ".".join(key_parts[:-1])
             left_column = key_parts[-1]
             left_operand = ""
 

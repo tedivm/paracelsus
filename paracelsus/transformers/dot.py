@@ -28,7 +28,7 @@ class Dot:
             for column in table.columns:
                 for foreign_key in column.foreign_keys:
                     key_parts = foreign_key.target_fullname.split(".")
-                    left_table = '.'.join(key_parts[:-1])
+                    left_table = ".".join(key_parts[:-1])
                     left_column = key_parts[-1]
 
                     # We don't add the connection to the fk table if the latter
@@ -40,7 +40,7 @@ class Dot:
                         )
                         continue
 
-                    edge = pydot.Edge(left_table.split('.')[-1], table.name)
+                    edge = pydot.Edge(left_table.split(".")[-1], table.name)
                     edge.set_label(column.name)
                     edge.set_dir("both")
 
