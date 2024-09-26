@@ -95,7 +95,7 @@ users [label=<
         <tr><td align="left">VARCHAR(100)</td><td align="left">display_name</td><td></td></tr>
         <tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>
     </table>
->, margin=0, shape=none];
+>, shape=none, margin=0];
 posts [label=<
     <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
         <tr><td colspan="3" bgcolor="lightblue"><b>posts</b></td></tr>
@@ -105,8 +105,8 @@ posts [label=<
         <tr><td align="left">BOOLEAN</td><td align="left">live</td><td></td></tr>
         <tr><td align="left">TEXT</td><td align="left">content</td><td></td></tr>
     </table>
->, margin=0, shape=none];
-users -- posts  [arrowhead=crow, arrowtail=none, dir=both, label=author];
+>, shape=none, margin=0];
+users -- posts [label=author, dir=both, arrowhead=crow, arrowtail=none];
 comments [label=<
     <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
         <tr><td colspan="3" bgcolor="lightblue"><b>comments</b></td></tr>
@@ -117,8 +117,8 @@ comments [label=<
         <tr><td align="left">BOOLEAN</td><td align="left">live</td><td></td></tr>
         <tr><td align="left">TEXT</td><td align="left">content</td><td></td></tr>
     </table>
->, margin=0, shape=none];
-posts -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=post];
-users -- comments  [arrowhead=crow, arrowtail=none, dir=both, label=author];
+>, shape=none, margin=0];
+posts -- comments [label=post, dir=both, arrowhead=crow, arrowtail=none];
+users -- comments [label=author, dir=both, arrowhead=crow, arrowtail=none];
 }
 """

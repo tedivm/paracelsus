@@ -66,8 +66,8 @@ class Mermaid:
 
         for foreign_key in column.foreign_keys:
             key_parts = foreign_key.target_fullname.split(".")
-            left_table = key_parts[0]
-            left_column = key_parts[1]
+            left_table = ".".join(key_parts[:-1])
+            left_column = key_parts[-1]
             left_operand = ""
 
             # We don't add the connection to the fk table if the latter
@@ -85,7 +85,7 @@ class Mermaid:
             else:
                 left_operand = "}o"
 
-            output += f"  {left_table} {left_operand}--{right_operand} {right_table} : {column_name}\n"
+            output += f"  {left_table.split('.')[-1]} {left_operand}--{right_operand} {right_table} : {column_name}\n"
         return output
 
     def __str__(self) -> str:
