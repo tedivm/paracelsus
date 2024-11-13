@@ -2,10 +2,10 @@ import importlib
 import os
 import sys
 from pathlib import Path
+import re
 from typing import List, Set
 
-from sqlalchemy import MetaData
-
+from sqlalchemy.schema import MetaData
 from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
 
@@ -83,9 +83,15 @@ def resolve_included_tables(
         case 0, 0:
             return all_tables
         case 0, int():
-            return all_tables - exclude_tables
+            excluded = {table for table in all_tables
+                        if any(re.match(pattern,table)for pattern in exclude_tables)}
+            return all_tables - excluded
         case int(), 0:
-            if not include_tables.issubset(all_tables):
+
+            included = {table for table in all_tables
+                        if any(re.match(pattern,table) for pattern in include_tables)} 
+            
+            if not included:
                 non_existent_tables = include_tables - all_tables
                 raise ValueError(
                     f"Some tables to include ({non_existent_tables}) don't exist"
