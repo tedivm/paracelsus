@@ -83,14 +83,11 @@ def resolve_included_tables(
         case 0, 0:
             return all_tables
         case 0, int():
-            excluded = {table for table in all_tables
-                        if any(re.match(pattern,table)for pattern in exclude_tables)}
+            excluded = {table for table in all_tables if any(re.match(pattern, table) for pattern in exclude_tables)}
             return all_tables - excluded
         case int(), 0:
+            included = {table for table in all_tables if any(re.match(pattern, table) for pattern in include_tables)}
 
-            included = {table for table in all_tables
-                        if any(re.match(pattern,table) for pattern in include_tables)} 
-            
             if not included:
                 non_existent_tables = include_tables - all_tables
                 raise ValueError(
