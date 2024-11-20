@@ -22,7 +22,7 @@ def test_graph(package_path: Path):
 
 
 @pytest.mark.parametrize("column_sort_arg", ["key-based", "preserve-order"])
-def test_graph_column_sort(package_path: Path, column_sort_arg: Literal['key-based'] | Literal['preserve-order']):
+def test_graph_column_sort(package_path: Path, column_sort_arg: Literal["key-based"] | Literal["preserve-order"]):
     result = runner.invoke(
         app,
         [
@@ -117,7 +117,7 @@ def test_inject(package_path: Path):
 
 
 @pytest.mark.parametrize("column_sort_arg", ["key-based", "preserve-order"])
-def test_inject_column_sort(package_path: Path, column_sort_arg: Literal['key-based'] | Literal['preserve-order']):
+def test_inject_column_sort(package_path: Path, column_sort_arg: Literal["key-based"] | Literal["preserve-order"]):
     result = runner.invoke(
         app,
         [
@@ -143,6 +143,7 @@ def test_version():
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
 
+
 from click.testing import CliRunner
 from paracelsus.cli import app
 
@@ -153,11 +154,9 @@ Base = declarative_base()
 
 
 class Comments(Base):
-    __tablename__ = 'comments'
+    __tablename__ = "comments"
     id = Column(Integer, primary_key=True)
     text = Column(String)
-
-
 
 
 def test_graph_with_inclusion_regex(package_path: Path):
