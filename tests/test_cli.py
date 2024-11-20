@@ -144,7 +144,19 @@ def test_version():
     assert result.exit_code == 0
 
 from click.testing import CliRunner
-from paracelsus.cli import cli
+from paracelsus.cli import app
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+
+class Comments(Base):
+    __tablename__ = 'comments'
+    id = Column(Integer, primary_key=True)
+    text = Column(String)
+
 
 
 
@@ -159,13 +171,13 @@ def test_graph_with_inclusion_regex(package_path: Path):
             "--python-dir",
             str(package_path),
             "--include-tables",
-            "^com.*",
+            "comments",
         ],
     )
     assert result.exit_code == 0
-    assert "regular_table {" not in result.stdout
-    assert "first_test {" in result.stdout
-    assert "second{" not in result.stdout
+    assert "comments {" in result.stdout
+    assert "users {" not in result.stdout
+    assert "post{" not in result.stdout
 
 
 def test_graph_with_exclusion_regex(package_path: Path):
@@ -179,10 +191,10 @@ def test_graph_with_exclusion_regex(package_path: Path):
             "--python-dir",
             str(package_path),
             "--exclude-tables",
-            "pos.*",
+            "^pos*",
         ],
     )
     assert result.exit_code == 0
-    assert "regular_table {" in result.stdout
-    assert "first {" not in result.stdout
-    assert "second {" in result.stdout
+    assert "comments {" in result.stdout
+    assert "users {" in result.stdout
+    assert "post {" not in result.stdout
