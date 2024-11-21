@@ -57,11 +57,11 @@ def graph(
     ] = [],
     exclude_tables: Annotated[
         List[str],
-        typer.Option(help="List of tables that are excluded from the graph"),
+        typer.Option(help="List of tables or regular expression patterns for tables that are excluded from the graph"),
     ] = [],
     include_tables: Annotated[
         List[str],
-        typer.Option(help="List of tables that are included in the graph"),
+        typer.Option(help="List of tables or regular expression patterns for tables that are included in the graph"),
     ] = [],
     python_dir: Annotated[
         List[Path],
