@@ -29,7 +29,6 @@ class Dot:
             self.graph.add_node(node)
             for foreign_key in table.foreign_key_constraints:
                 old_left_table = None
-                left_columns = []
                 columns = []
                 unique = True
                 l_unique = True
@@ -48,19 +47,18 @@ class Dot:
                             f"'{table}.{foreign_key.name}' is a foreign key to '{left_table}' "
                             "which is not included in the graph, skipping the connection."
                         )
-                        left_columns = None
+                        columns = None
                         break
                     l_column = self.metadata.tables[left_table].columns[left_column]
                     if not l_column.unique and not l_column.primary_key:
                         l_unique = False
-                    left_columns.append(left_column)
                     columns.append(fk_element.column.name)
                     if not fk_element.column.unique:
                         unique = False
 
-                if left_columns:
+                if columns:
                     edge = pydot.Edge(old_left_table.split(".")[-1], table.name)
-                    edge.set_label(', '.join(columns))
+                    edge.set_label(', '.join(foreign_key.column_keys))
                     edge.set_dir("both")
 
                     edge.set_arrowhead("none")
