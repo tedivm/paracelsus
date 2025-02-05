@@ -27,32 +27,48 @@ class Dot:
             node.set_shape("none")
             node.set_margin("0")
             self.graph.add_node(node)
-            for column in table.columns:
-                for foreign_key in column.foreign_keys:
-                    key_parts = foreign_key.target_fullname.split(".")
+            for foreign_key in table.foreign_key_constraints:
+                old_left_table = None
+                left_columns = []
+                columns = []
+                unique = True
+                l_unique = True
+                for fk_element in foreign_key.elements:
+                    key_parts = fk_element.target_fullname.split(".")
                     left_table = ".".join(key_parts[:-1])
+                    if old_left_table is not None and old_left_table != left_table:
+                        raise(ValueError("Invalid FK definition: multiple target tables."))
+                    old_left_table = left_table
                     left_column = key_parts[-1]
 
                     # We don't add the connection to the fk table if the latter
                     # is not included in our graph.
                     if left_table not in self.metadata.tables:
                         logger.warning(
-                            f"Table '{table}.{column.name}' is a foreign key to '{left_table}' "
+                            f"'{table}.{foreign_key.name}' is a foreign key to '{left_table}' "
                             "which is not included in the graph, skipping the connection."
                         )
-                        continue
+                        left_columns = None
+                        break
+                    l_column = self.metadata.tables[left_table].columns[left_column]
+                    if not l_column.unique and not l_column.primary_key:
+                        l_unique = False
+                    left_columns.append(left_column)
+                    columns.append(fk_element.column.name)
+                    if not fk_element.column.unique:
+                        unique = False
 
-                    edge = pydot.Edge(left_table.split(".")[-1], table.name)
-                    edge.set_label(column.name)
+                if left_columns:
+                    edge = pydot.Edge(old_left_table.split(".")[-1], table.name)
+                    edge.set_label(', '.join(columns))
                     edge.set_dir("both")
 
                     edge.set_arrowhead("none")
-                    if not column.unique:
+                    if not unique:
                         edge.set_arrowhead("crow")
 
-                    l_column = self.metadata.tables[left_table].columns[left_column]
                     edge.set_arrowtail("none")
-                    if not l_column.unique and not l_column.primary_key:
+                    if not l_unique:
                         edge.set_arrowtail("crow")
 
                     self.graph.add_edge(edge)
