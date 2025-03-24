@@ -27,6 +27,11 @@ class ColumnSorts(str, Enum):
     preserve = "preserve-order"
 
 
+class Layouts(str, Enum):
+    dagre = "dagre"
+    elk = "elk"
+
+
 if "column_sort" in PYPROJECT_SETTINGS:
     SORT_DEFAULT = ColumnSorts(PYPROJECT_SETTINGS["column_sort"]).value
 else:
@@ -82,12 +87,21 @@ def graph(
             help="Specifies the method of sorting columns in diagrams.",
         ),
     ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    layout: Annotated[
+        Optional[Layouts],
+        typer.Option(
+            help="Specifies the layout of the diagram. Only applicable for mermaid format.",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
 
     if "imports" in settings:
         import_module.extend(settings["imports"])
+
+    if layout and format != Formats.mermaid:
+        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
 
     typer.echo(
         get_graph_string(
@@ -98,6 +112,7 @@ def graph(
             python_dir=python_dir,
             format=format.value,
             column_sort=column_sort,
+            layout=layout.value if layout else None,
         )
     )
 
@@ -166,10 +181,19 @@ def inject(
             help="Specifies the method of sorting columns in diagrams.",
         ),
     ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    layout: Annotated[
+        Optional[Layouts],
+        typer.Option(
+            help="Specifies the layout of the diagram. Only applicable for mermaid format.",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
         import_module.extend(settings["imports"])
+
+    if layout and format != Formats.mermaid:
+        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
 
     # Generate Graph
     graph = get_graph_string(
@@ -180,6 +204,7 @@ def inject(
         python_dir=python_dir,
         format=format.value,
         column_sort=column_sort,
+        layout=layout.value if layout else None,
     )
 
     comment_format = transformers[format].comment_format  # type: ignore

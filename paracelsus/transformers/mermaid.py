@@ -1,5 +1,7 @@
 import logging
 from sqlalchemy.sql.schema import Column, MetaData, Table
+from typing import Optional
+import textwrap
 
 from .utils import sort_columns
 
@@ -11,10 +13,12 @@ class Mermaid:
     comment_format: str = "mermaid"
     metadata: MetaData
     column_sort: str
+    layout: Optional[str]
 
-    def __init__(self, metaclass: MetaData, column_sort: str) -> None:
+    def __init__(self, metaclass: MetaData, column_sort: str, layout: Optional[str] = None) -> None:
         self.metadata = metaclass
         self.column_sort = column_sort
+        self.layout = layout
 
     def _table(self, table: Table) -> str:
         output = f"  {table.name}"
@@ -89,7 +93,16 @@ class Mermaid:
         return output
 
     def __str__(self) -> str:
-        output = "erDiagram\n"
+        output = ""
+        if self.layout:
+            yaml_front_matter = textwrap.dedent(f"""
+            ---
+                config:
+                    layout: {self.layout}
+            ---
+            """)
+            output = yaml_front_matter + output
+        output += "erDiagram\n"
         for table in self.metadata.tables.values():
             output += self._table(table)
 

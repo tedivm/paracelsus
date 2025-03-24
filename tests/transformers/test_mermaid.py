@@ -12,3 +12,18 @@ def test_mermaid(metaclass):
 def test_mermaid_column_sort_preserve_order(metaclass, mermaid_full_string_preseve_column_sort):
     mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order")
     assert str(mermaid) == mermaid_full_string_preseve_column_sort
+
+
+def test_mermaid_with_no_layout(metaclass, mermaid_full_string_with_no_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout=None)
+    assert str(mermaid) == mermaid_full_string_with_no_layout
+
+
+def test_mermaid_with_dagre_layout(metaclass, mermaid_full_string_with_dagre_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="dagre")
+    assert str(mermaid) == mermaid_full_string_with_dagre_layout
+
+
+def test_mermaid_with_elk_layout(metaclass, mermaid_full_string_with_elk_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="elk")
+    assert str(mermaid) == mermaid_full_string_with_elk_layout

@@ -182,3 +182,46 @@ def test_graph_with_exclusion_regex(package_path: Path):
     assert "comments {" in result.stdout
     assert "users {" in result.stdout
     assert "post {" not in result.stdout
+
+
+@pytest.mark.parametrize("layout_arg", ["dagre", "elk"])
+def test_graph_layout(package_path: Path, layout_arg: Literal["dagre", "elk"]):
+    result = runner.invoke(
+        app,
+        [
+            "graph",
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            layout_arg,
+        ],
+    )
+
+    assert result.exit_code == 0
+    mermaid_assert(result.stdout)
+
+
+@pytest.mark.parametrize("layout_arg", ["dagre", "elk"])
+def test_inject_layout(package_path: Path, layout_arg: Literal["dagre", "elk"]):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            layout_arg,
+        ],
+    )
+    assert result.exit_code == 0
+
+    with open(package_path / "README.md") as fp:
+        readme = fp.read()
+        mermaid_assert(readme)
