@@ -51,3 +51,6 @@ find = {}
 [tool.setuptools_scm]
 fallback_version = "0.0.0-dev"
 write_to = "paracelsus/_version.py"
+
+[tool.paracelsus]
+layout = "dagre"
