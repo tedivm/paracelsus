@@ -3,13 +3,14 @@ import os
 import sys
 from pathlib import Path
 import re
-from typing import List, Set
+from typing import List, Set, Optional, Dict, Union
 
 from sqlalchemy.schema import MetaData
+
 from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
 
-transformers = {
+transformers: Dict[str, type[Union[Mermaid, Dot]]] = {
     "mmd": Mermaid,
     "mermaid": Mermaid,
     "dot": Dot,
@@ -27,6 +28,7 @@ def get_graph_string(
     format: str,
     column_sort: str,
     omit_comments: bool = False,
+    layout: Optional[str] = None,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
     sys.path.append(str(os.getcwd()))
@@ -62,7 +64,7 @@ def get_graph_string(
     filtered_metadata = filter_metadata(metadata=metadata, include_tables=include_tables)
 
     # Save the graph structure to string.
-    return str(transformer(filtered_metadata, column_sort, omit_comments))
+    return str(transformer(filtered_metadata, column_sort, omit_comments=omit_comments, layout=layout))
 
 
 def resolve_included_tables(

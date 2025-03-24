@@ -22,3 +22,18 @@ def test_mermaid_keep_comments(metaclass):
 def test_mermaid_omit_comments(metaclass):
     mermaid = Mermaid(metaclass=metaclass, column_sort="key-based", omit_comments=True)
     assert "True if post is published" not in str(mermaid)
+
+
+def test_mermaid_with_no_layout(metaclass, mermaid_full_string_with_no_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout=None)
+    assert str(mermaid) == mermaid_full_string_with_no_layout
+
+
+def test_mermaid_with_dagre_layout(metaclass, mermaid_full_string_with_dagre_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="dagre")
+    assert str(mermaid) == mermaid_full_string_with_dagre_layout
+
+
+def test_mermaid_with_elk_layout(metaclass, mermaid_full_string_with_elk_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="elk")
+    assert str(mermaid) == mermaid_full_string_with_elk_layout
