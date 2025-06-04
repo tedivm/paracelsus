@@ -32,6 +32,11 @@ if "column_sort" in PYPROJECT_SETTINGS:
 else:
     SORT_DEFAULT = ColumnSorts.key_based.value
 
+if "omit_comments" in PYPROJECT_SETTINGS:
+    OMIT_COMMENTS_DEFAULT = PYPROJECT_SETTINGS["omit_comments"]
+else:
+    OMIT_COMMENTS_DEFAULT = False
+
 
 def get_base_class(base_class_path: str | None, settings: Dict[str, Any] | None) -> str:
     if base_class_path:
@@ -82,6 +87,13 @@ def graph(
             help="Specifies the method of sorting columns in diagrams.",
         ),
     ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    omit_comments: Annotated[
+        bool,
+        typer.Option(
+            "--omit-comments",
+            help="Omit SQLAlchemy column comments from the diagram.",
+        ),
+    ] = OMIT_COMMENTS_DEFAULT,
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
@@ -98,6 +110,7 @@ def graph(
             python_dir=python_dir,
             format=format.value,
             column_sort=column_sort,
+            omit_comments=omit_comments,
         )
     )
 
@@ -166,6 +179,13 @@ def inject(
             help="Specifies the method of sorting columns in diagrams.",
         ),
     ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    omit_comments: Annotated[
+        bool,
+        typer.Option(
+            "--omit-comments",
+            help="Omit SQLAlchemy column comments from the diagram.",
+        ),
+    ] = OMIT_COMMENTS_DEFAULT,
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
@@ -180,6 +200,7 @@ def inject(
         python_dir=python_dir,
         format=format.value,
         column_sort=column_sort,
+        omit_comments=omit_comments,
     )
 
     comment_format = transformers[format].comment_format  # type: ignore

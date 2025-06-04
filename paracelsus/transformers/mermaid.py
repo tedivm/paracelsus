@@ -11,10 +11,12 @@ class Mermaid:
     comment_format: str = "mermaid"
     metadata: MetaData
     column_sort: str
+    omit_comments: bool
 
-    def __init__(self, metaclass: MetaData, column_sort: str) -> None:
+    def __init__(self, metaclass: MetaData, column_sort: str, omit_comments: bool = False) -> None:
         self.metadata = metaclass
         self.column_sort = column_sort
+        self.omit_comments = omit_comments
 
     def _table(self, table: Table) -> str:
         output = f"  {table.name}"
@@ -39,7 +41,7 @@ class Mermaid:
         elif column.unique:
             column_str += " UK"
 
-        if column.comment:
+        if column.comment and not self.omit_comments:
             options.append(column.comment)
 
         if column.nullable:

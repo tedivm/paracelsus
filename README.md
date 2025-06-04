@@ -125,6 +125,10 @@ paracelsus graph example_app.models.base:Base \
   --column-sort preserve-order
 ```
 
+### Omit Comments
+
+By default, SQLAlchemy column comments are included in the generated mermaid diagrams. You can omit these comments using the `--omit-comments` flag, which [might improve](https://github.com/tedivm/paracelsus/issues/32) legibility.
+
 ### Generate Mermaid Diagrams
 
 
@@ -251,6 +255,7 @@ exclude_tables = [
   "comments"
 ]
 column_sort = "preserve-order"
+omit_comments = false
 ```
 
 ## Sponsorship

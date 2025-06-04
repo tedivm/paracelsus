@@ -13,11 +13,13 @@ class Dot:
     metadata: MetaData
     graph: pydot.Dot
     column_sort: str
+    omit_comments: bool
 
-    def __init__(self, metaclass: MetaData, column_sort: str) -> None:
+    def __init__(self, metaclass: MetaData, column_sort: str, omit_comments: bool = False) -> None:
         self.metadata = metaclass
         self.graph = pydot.Dot("database", graph_type="graph")
         self.column_sort = column_sort
+        self.omit_comments = omit_comments
 
         for table in self.metadata.tables.values():
             node = pydot.Node(name=table.name)
