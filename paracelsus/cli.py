@@ -101,18 +101,17 @@ def graph(
     if "imports" in settings:
         import_module.extend(settings["imports"])
 
-    typer.echo(
-        get_graph_string(
-            base_class_path=base_class,
-            import_module=import_module,
-            include_tables=set(include_tables + settings.get("include_tables", [])),
-            exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
-            python_dir=python_dir,
-            format=format.value,
-            column_sort=column_sort,
-            omit_comments=omit_comments,
-        )
+    graph_string = get_graph_string(
+        base_class_path=base_class,
+        import_module=import_module,
+        include_tables=set(include_tables + settings.get("include_tables", [])),
+        exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
+        python_dir=python_dir,
+        format=format.value,
+        column_sort=column_sort,
+        omit_comments=omit_comments,
     )
+    typer.echo(graph_string, nl=not graph_string.endswith("\n"))
 
 
 @app.command(help="Create a graph and inject it as a code field into a markdown file.")
