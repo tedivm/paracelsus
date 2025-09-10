@@ -141,7 +141,9 @@ def test_inject_column_sort(package_path: Path, column_sort_arg: Literal["key-ba
         mermaid_assert(readme)
 
 
-@mock.patch("paracelsus.cli.get_pyproject_settings", return_value={"base": "example.base:Base", "imports": ["example.models"]})
+@mock.patch(
+    "paracelsus.cli.get_pyproject_settings", return_value={"base": "example.base:Base", "imports": ["example.models"]}
+)
 def test_inject_pyproject_configuration(mock_get_pyproject_settings: Mock, package_path: Path):
     """Test that the pyproject.toml configuration is used when base class path is not passed as argument."""
     result = runner.invoke(
@@ -149,10 +151,12 @@ def test_inject_pyproject_configuration(mock_get_pyproject_settings: Mock, packa
         ["inject", str(package_path / "README.md")],
     )
     assert result.exit_code == 0
-    
+
     with open(package_path / "README.md") as fp:
         readme = fp.read()
         mermaid_assert(readme)
+
+    mock_get_pyproject_settings.assert_called_once()
 
 
 def test_version():
