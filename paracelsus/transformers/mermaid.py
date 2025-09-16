@@ -1,8 +1,9 @@
 import logging
+
+import sqlalchemy
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
 from .utils import sort_columns
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ class Mermaid:
 
     def _column(self, column: Column) -> str:
         options = []
-        column_str = f"{column.type} {column.name}"
+        col_type = column.type
+        is_enum = isinstance(col_type, sqlalchemy.Enum)
+        column_str = f"ENUM {column.name}" if is_enum else f"{col_type} {column.name}"
 
         if column.primary_key:
             if len(column.foreign_keys) > 0:
@@ -50,8 +53,18 @@ class Mermaid:
         if column.index:
             options.append("indexed")
 
-        if len(options) > 0:
-            column_str += f' "{",".join(options)}"'
+        # For ENUM, add values as a separate part
+        option_str = ",".join(options)
+
+        if is_enum:
+            enum_values = ", ".join(col_type.enums)
+            if option_str:
+                option_str += f"; values: {enum_values}"
+            else:
+                option_str = f"values: {enum_values}"
+
+        if option_str:
+            column_str += f' "{option_str}"'
 
         return f"    {column_str}\n"
 
