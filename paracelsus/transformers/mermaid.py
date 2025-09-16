@@ -57,7 +57,7 @@ class Mermaid:
         option_str = ",".join(options)
 
         if is_enum:
-            enum_values = ", ".join(col_type.enums)
+            enum_values = ", ".join(col_type.enums)  # type: ignore # MyPy will fail here, but this code works.
             if option_str:
                 option_str += f"; values: {enum_values}"
             else:
