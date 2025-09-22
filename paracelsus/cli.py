@@ -142,9 +142,9 @@ def inject(
         ),
     ],
     base_class_path: Annotated[
-        str,
+        Optional[str],
         typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
-    ],
+    ] = None,
     replace_begin_tag: Annotated[
         str,
         typer.Option(help=""),
@@ -208,6 +208,8 @@ def inject(
     ] = None,
 ):
     settings = get_pyproject_settings()
+    base_class = get_base_class(base_class_path, settings)
+
     if "imports" in settings:
         import_module.extend(settings["imports"])
 
@@ -216,7 +218,7 @@ def inject(
 
     # Generate Graph
     graph = get_graph_string(
-        base_class_path=base_class_path,
+        base_class_path=base_class,
         import_module=import_module,
         include_tables=set(include_tables + settings.get("include_tables", [])),
         exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
