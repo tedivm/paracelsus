@@ -1,3 +1,5 @@
+from typing import ClassVar, Optional
+
 import pydot  # type: ignore
 import logging
 from sqlalchemy.sql.schema import MetaData, Table
@@ -9,17 +11,20 @@ logger = logging.getLogger(__name__)
 
 
 class Dot:
-    comment_format: str = "dot"
-    metadata: MetaData
-    graph: pydot.Dot
-    column_sort: str
-    omit_comments: bool
+    comment_format: ClassVar[str] = "dot"
 
-    def __init__(self, metaclass: MetaData, column_sort: str, omit_comments: bool = False) -> None:
-        self.metadata = metaclass
-        self.graph = pydot.Dot("database", graph_type="graph")
-        self.column_sort = column_sort
-        self.omit_comments = omit_comments
+    def __init__(
+        self,
+        metaclass: MetaData,
+        column_sort: str,
+        omit_comments: bool = False,
+        layout: Optional[str] = None,
+    ) -> None:
+        self.metadata: MetaData = metaclass
+        self.graph: pydot.Dot = pydot.Dot("database", graph_type="graph")
+        self.column_sort: str = column_sort
+        self.omit_comments: bool = omit_comments
+        self.layout: Optional[str] = layout
 
         for table in self.metadata.tables.values():
             node = pydot.Node(name=table.name)

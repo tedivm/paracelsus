@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Literal
 import pytest
+from unittest.mock import Mock
+from unittest import mock
 
 from typer.testing import CliRunner
 
@@ -139,6 +141,24 @@ def test_inject_column_sort(package_path: Path, column_sort_arg: Literal["key-ba
         mermaid_assert(readme)
 
 
+@mock.patch(
+    "paracelsus.cli.get_pyproject_settings", return_value={"base": "example.base:Base", "imports": ["example.models"]}
+)
+def test_inject_pyproject_configuration(mock_get_pyproject_settings: Mock, package_path: Path):
+    """Test that the pyproject.toml configuration is used when base class path is not passed as argument."""
+    result = runner.invoke(
+        app,
+        ["inject", str(package_path / "README.md")],
+    )
+    assert result.exit_code == 0
+
+    with open(package_path / "README.md") as fp:
+        readme = fp.read()
+        mermaid_assert(readme)
+
+    mock_get_pyproject_settings.assert_called_once()
+
+
 def test_version():
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
@@ -182,3 +202,46 @@ def test_graph_with_exclusion_regex(package_path: Path):
     assert "comments {" in result.stdout
     assert "users {" in result.stdout
     assert "post {" not in result.stdout
+
+
+@pytest.mark.parametrize("layout_arg", ["dagre", "elk"])
+def test_graph_layout(package_path: Path, layout_arg: Literal["dagre", "elk"]):
+    result = runner.invoke(
+        app,
+        [
+            "graph",
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            layout_arg,
+        ],
+    )
+
+    assert result.exit_code == 0
+    mermaid_assert(result.stdout)
+
+
+@pytest.mark.parametrize("layout_arg", ["dagre", "elk"])
+def test_inject_layout(package_path: Path, layout_arg: Literal["dagre", "elk"]):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            layout_arg,
+        ],
+    )
+    assert result.exit_code == 0
+
+    with open(package_path / "README.md") as fp:
+        readme = fp.read()
+        mermaid_assert(readme)

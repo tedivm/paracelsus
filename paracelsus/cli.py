@@ -27,6 +27,11 @@ class ColumnSorts(str, Enum):
     preserve = "preserve-order"
 
 
+class Layouts(str, Enum):
+    dagre = "dagre"
+    elk = "elk"
+
+
 if "column_sort" in PYPROJECT_SETTINGS:
     SORT_DEFAULT = ColumnSorts(PYPROJECT_SETTINGS["column_sort"]).value
 else:
@@ -94,12 +99,21 @@ def graph(
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
     ] = OMIT_COMMENTS_DEFAULT,
+    layout: Annotated[
+        Optional[Layouts],
+        typer.Option(
+            help="Specifies the layout of the diagram. Only applicable for mermaid format.",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
 
     if "imports" in settings:
         import_module.extend(settings["imports"])
+
+    if layout and format != Formats.mermaid:
+        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
 
     graph_string = get_graph_string(
         base_class_path=base_class,
@@ -110,6 +124,7 @@ def graph(
         format=format.value,
         column_sort=column_sort,
         omit_comments=omit_comments,
+        layout=layout.value if layout else None,
     )
     typer.echo(graph_string, nl=not graph_string.endswith("\n"))
 
@@ -127,9 +142,9 @@ def inject(
         ),
     ],
     base_class_path: Annotated[
-        str,
+        Optional[str],
         typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
-    ],
+    ] = None,
     replace_begin_tag: Annotated[
         str,
         typer.Option(help=""),
@@ -185,14 +200,25 @@ def inject(
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
     ] = OMIT_COMMENTS_DEFAULT,
+    layout: Annotated[
+        Optional[Layouts],
+        typer.Option(
+            help="Specifies the layout of the diagram. Only applicable for mermaid format.",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings()
+    base_class = get_base_class(base_class_path, settings)
+
     if "imports" in settings:
         import_module.extend(settings["imports"])
 
+    if layout and format != Formats.mermaid:
+        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
+
     # Generate Graph
     graph = get_graph_string(
-        base_class_path=base_class_path,
+        base_class_path=base_class,
         import_module=import_module,
         include_tables=set(include_tables + settings.get("include_tables", [])),
         exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
@@ -200,6 +226,7 @@ def inject(
         format=format.value,
         column_sort=column_sort,
         omit_comments=omit_comments,
+        layout=layout.value if layout else None,
     )
 
     comment_format = transformers[format].comment_format  # type: ignore
