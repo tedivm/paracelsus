@@ -13,11 +13,15 @@ class Mermaid:
     metadata: MetaData
     column_sort: str
     omit_comments: bool
+    max_enum_members: int
 
-    def __init__(self, metaclass: MetaData, column_sort: str, omit_comments: bool = False) -> None:
+    def __init__(
+        self, metaclass: MetaData, column_sort: str, omit_comments: bool = False, max_enum_members: int = 0
+    ) -> None:
         self.metadata = metaclass
         self.column_sort = column_sort
         self.omit_comments = omit_comments
+        self.max_enum_members = max_enum_members
 
     def _table(self, table: Table) -> str:
         output = f"  {table.name}"
@@ -56,8 +60,14 @@ class Mermaid:
         # For ENUM, add values as a separate part
         option_str = ",".join(options)
 
-        if is_enum:
-            enum_values = ", ".join(col_type.enums)  # type: ignore # MyPy will fail here, but this code works.
+        if is_enum and self.max_enum_members > 0:
+            enum_list = list(col_type.enums)  # type: ignore # MyPy will fail here, but this code works.
+            if len(enum_list) <= self.max_enum_members:
+                enum_values = ", ".join(enum_list)
+            else:
+                displayed_values = enum_list[: self.max_enum_members - 1]
+                enum_values = ", ".join(displayed_values) + ", ..., " + enum_list[-1]
+
             if option_str:
                 option_str += f"; values: {enum_values}"
             else:

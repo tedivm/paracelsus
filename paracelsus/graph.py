@@ -27,6 +27,7 @@ def get_graph_string(
     format: str,
     column_sort: str,
     omit_comments: bool = False,
+    max_enum_members: int = 0,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
     sys.path.append(str(os.getcwd()))
@@ -62,7 +63,7 @@ def get_graph_string(
     filtered_metadata = filter_metadata(metadata=metadata, include_tables=include_tables)
 
     # Save the graph structure to string.
-    return str(transformer(filtered_metadata, column_sort, omit_comments))
+    return str(transformer(filtered_metadata, column_sort, omit_comments, max_enum_members))
 
 
 def resolve_included_tables(

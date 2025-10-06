@@ -37,6 +37,11 @@ if "omit_comments" in PYPROJECT_SETTINGS:
 else:
     OMIT_COMMENTS_DEFAULT = False
 
+if "max_enum_members" in PYPROJECT_SETTINGS:
+    MAX_ENUM_MEMBERS_DEFAULT = PYPROJECT_SETTINGS["max_enum_members"]
+else:
+    MAX_ENUM_MEMBERS_DEFAULT = 3
+
 
 def get_base_class(base_class_path: str | None, settings: Dict[str, Any] | None) -> str:
     if base_class_path:
@@ -94,6 +99,13 @@ def graph(
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
     ] = OMIT_COMMENTS_DEFAULT,
+    max_enum_members: Annotated[
+        int,
+        typer.Option(
+            "--max-enum-members",
+            help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
+        ),
+    ] = MAX_ENUM_MEMBERS_DEFAULT,
 ):
     settings = get_pyproject_settings()
     base_class = get_base_class(base_class_path, settings)
@@ -110,6 +122,7 @@ def graph(
         format=format.value,
         column_sort=column_sort,
         omit_comments=omit_comments,
+        max_enum_members=max_enum_members,
     )
     typer.echo(graph_string, nl=not graph_string.endswith("\n"))
 
@@ -185,6 +198,13 @@ def inject(
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
     ] = OMIT_COMMENTS_DEFAULT,
+    max_enum_members: Annotated[
+        int,
+        typer.Option(
+            "--max-enum-members",
+            help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
+        ),
+    ] = MAX_ENUM_MEMBERS_DEFAULT,
 ):
     settings = get_pyproject_settings()
     if "imports" in settings:
@@ -200,6 +220,7 @@ def inject(
         format=format.value,
         column_sort=column_sort,
         omit_comments=omit_comments,
+        max_enum_members=max_enum_members,
     )
 
     comment_format = transformers[format].comment_format  # type: ignore

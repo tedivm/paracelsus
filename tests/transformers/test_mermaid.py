@@ -36,8 +36,43 @@ def test_mermaid_enum_values_present():
         Column("id", sqlalchemy.Integer, primary_key=True),
         Column("status", status_enum, nullable=True),
     )
-    mermaid = Mermaid(metaclass=metadata, column_sort="key-based")
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=10)
     status_column = table.columns["status"]
     column_str = mermaid._column(status_column)
 
     assert "values: draft, published, archived" in column_str
+
+
+def test_mermaid_enum_values_hidden_when_max_zero():
+    metadata = MetaData()
+    status_enum = Enum("draft", "published", "archived", name="status_enum")
+    table = Table(
+        "post",
+        metadata,
+        Column("id", sqlalchemy.Integer, primary_key=True),
+        Column("status", status_enum, nullable=True),
+    )
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=0)
+    status_column = table.columns["status"]
+    column_str = mermaid._column(status_column)
+
+    assert "values:" not in column_str
+    assert "ENUM status" in column_str
+
+
+def test_mermaid_enum_values_limited():
+    metadata = MetaData()
+    status_enum = Enum("draft", "published", "archived", "deleted", "review", name="status_enum")
+    table = Table(
+        "post",
+        metadata,
+        Column("id", sqlalchemy.Integer, primary_key=True),
+        Column("status", status_enum, nullable=True),
+    )
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=3)
+    status_column = table.columns["status"]
+    column_str = mermaid._column(status_column)
+
+    assert "values: draft, published, ..., review" in column_str
+    assert "archived" not in column_str
+    assert "deleted" not in column_str
