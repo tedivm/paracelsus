@@ -52,7 +52,7 @@ def test_mermaid_enum_values_hidden_when_max_zero():
         Column("id", sqlalchemy.Integer, primary_key=True),
         Column("status", status_enum, nullable=True),
     )
-    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=0)
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=0, layout=None)
     status_column = table.columns["status"]
     column_str = mermaid._column(status_column)
 
@@ -69,10 +69,25 @@ def test_mermaid_enum_values_limited():
         Column("id", sqlalchemy.Integer, primary_key=True),
         Column("status", status_enum, nullable=True),
     )
-    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=3)
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=3, layout=None)
     status_column = table.columns["status"]
     column_str = mermaid._column(status_column)
 
     assert "values: draft, published, ..., review" in column_str
     assert "archived" not in column_str
     assert "deleted" not in column_str
+
+
+def test_mermaid_with_no_layout(metaclass, mermaid_full_string_with_no_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout=None)
+    assert str(mermaid) == mermaid_full_string_with_no_layout
+
+
+def test_mermaid_with_dagre_layout(metaclass, mermaid_full_string_with_dagre_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="dagre")
+    assert str(mermaid) == mermaid_full_string_with_dagre_layout
+
+
+def test_mermaid_with_elk_layout(metaclass, mermaid_full_string_with_elk_layout):
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="elk")
+    assert str(mermaid) == mermaid_full_string_with_elk_layout
