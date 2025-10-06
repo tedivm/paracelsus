@@ -1,6 +1,6 @@
 import logging
 import textwrap
-from typing import ClassVar, Optional
+from typing import Optional
 
 import sqlalchemy
 from sqlalchemy.sql.schema import Column, MetaData, Table
