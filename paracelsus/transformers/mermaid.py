@@ -1,7 +1,9 @@
 import logging
-from sqlalchemy.sql.schema import Column, Table, MetaData
-from typing import ClassVar, Optional
 import textwrap
+from typing import ClassVar, Optional
+
+import sqlalchemy
+from sqlalchemy.sql.schema import Column, MetaData, Table
 
 from .utils import sort_columns
 
@@ -14,10 +16,15 @@ class Mermaid:
     column_sort: str
     omit_comments: bool
     max_enum_members: int
-    layout: Optional[str] = None,
+    layout: Optional[str]
 
     def __init__(
-        self, metaclass: MetaData, column_sort: str, omit_comments: bool = False, max_enum_members: int = 0
+        self,
+        metaclass: MetaData,
+        column_sort: str,
+        omit_comments: bool = False,
+        max_enum_members: int = 0,
+        layout: Optional[str] = None,
     ) -> None:
         self.metadata = metaclass
         self.column_sort = column_sort
