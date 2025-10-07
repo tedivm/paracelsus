@@ -1,27 +1,35 @@
 import logging
-from sqlalchemy.sql.schema import Column, Table, MetaData
-from typing import ClassVar, Optional
 import textwrap
+from typing import Optional
+
+import sqlalchemy
+from sqlalchemy.sql.schema import Column, MetaData, Table
 
 from .utils import sort_columns
-
 
 logger = logging.getLogger(__name__)
 
 
 class Mermaid:
-    comment_format: ClassVar[str] = "mermaid"
+    comment_format: str = "mermaid"
+    metadata: MetaData
+    column_sort: str
+    omit_comments: bool
+    max_enum_members: int
+    layout: Optional[str]
 
     def __init__(
         self,
         metaclass: MetaData,
         column_sort: str,
         omit_comments: bool = False,
+        max_enum_members: int = 0,
         layout: Optional[str] = None,
     ) -> None:
-        self.metadata: MetaData = metaclass
-        self.column_sort: str = column_sort
-        self.omit_comments: bool = omit_comments
+        self.metadata = metaclass
+        self.column_sort = column_sort
+        self.omit_comments = omit_comments
+        self.max_enum_members = max_enum_members
         self.layout: Optional[str] = layout
 
     def _table(self, table: Table) -> str:
@@ -35,7 +43,9 @@ class Mermaid:
 
     def _column(self, column: Column) -> str:
         options = []
-        column_str = f"{column.type} {column.name}"
+        col_type = column.type
+        is_enum = isinstance(col_type, sqlalchemy.Enum)
+        column_str = f"ENUM {column.name}" if is_enum else f"{col_type} {column.name}"
 
         if column.primary_key:
             if len(column.foreign_keys) > 0:
@@ -56,8 +66,24 @@ class Mermaid:
         if column.index:
             options.append("indexed")
 
-        if len(options) > 0:
-            column_str += f' "{",".join(options)}"'
+        # For ENUM, add values as a separate part
+        option_str = ",".join(options)
+
+        if is_enum and self.max_enum_members > 0:
+            enum_list = list(col_type.enums)  # type: ignore # MyPy will fail here, but this code works.
+            if len(enum_list) <= self.max_enum_members:
+                enum_values = ", ".join(enum_list)
+            else:
+                displayed_values = enum_list[: self.max_enum_members - 1]
+                enum_values = ", ".join(displayed_values) + ", ..., " + enum_list[-1]
+
+            if option_str:
+                option_str += f"; values: {enum_values}"
+            else:
+                option_str = f"values: {enum_values}"
+
+        if option_str:
+            column_str += f' "{option_str}"'
 
         return f"    {column_str}\n"
 

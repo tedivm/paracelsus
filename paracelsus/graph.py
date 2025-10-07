@@ -28,6 +28,7 @@ def get_graph_string(
     format: str,
     column_sort: str,
     omit_comments: bool = False,
+    max_enum_members: int = 0,
     layout: Optional[str] = None,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.

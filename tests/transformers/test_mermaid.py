@@ -1,3 +1,6 @@
+import sqlalchemy
+from sqlalchemy import Column, Enum, MetaData, Table
+
 from paracelsus.transformers.mermaid import Mermaid
 
 from ..utils import mermaid_assert
@@ -22,6 +25,57 @@ def test_mermaid_keep_comments(metaclass):
 def test_mermaid_omit_comments(metaclass):
     mermaid = Mermaid(metaclass=metaclass, column_sort="key-based", omit_comments=True)
     assert "True if post is published" not in str(mermaid)
+
+
+def test_mermaid_enum_values_present():
+    metadata = MetaData()
+    status_enum = Enum("draft", "published", "archived", name="status_enum")
+    table = Table(
+        "post",
+        metadata,
+        Column("id", sqlalchemy.Integer, primary_key=True),
+        Column("status", status_enum, nullable=True),
+    )
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=10)
+    status_column = table.columns["status"]
+    column_str = mermaid._column(status_column)
+
+    assert "values: draft, published, archived" in column_str
+
+
+def test_mermaid_enum_values_hidden_when_max_zero():
+    metadata = MetaData()
+    status_enum = Enum("draft", "published", "archived", name="status_enum")
+    table = Table(
+        "post",
+        metadata,
+        Column("id", sqlalchemy.Integer, primary_key=True),
+        Column("status", status_enum, nullable=True),
+    )
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=0, layout=None)
+    status_column = table.columns["status"]
+    column_str = mermaid._column(status_column)
+
+    assert "values:" not in column_str
+    assert "ENUM status" in column_str
+
+
+def test_mermaid_enum_values_limited():
+    metadata = MetaData()
+    status_enum = Enum("draft", "published", "archived", "deleted", "review", name="status_enum")
+    table = Table(
+        "post",
+        metadata,
+        Column("id", sqlalchemy.Integer, primary_key=True),
+        Column("status", status_enum, nullable=True),
+    )
+    mermaid = Mermaid(metaclass=metadata, column_sort="key-based", max_enum_members=3, layout=None)
+    status_column = table.columns["status"]
+    column_str = mermaid._column(status_column)
+
+    assert "values: draft, published, ..., review" in column_str
+    assert "archived" not in column_str
+    assert "deleted" not in column_str
 
 
 def test_mermaid_with_no_layout(metaclass, mermaid_full_string_with_no_layout):
