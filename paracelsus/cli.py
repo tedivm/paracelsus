@@ -261,8 +261,7 @@ def inject(
 {inject_settings.replace_end_tag}"""
 
     # Get content from current file.
-    with open(file, "r") as fp:
-        old_content = fp.read()
+    old_content = inject_settings.file.read_text()
 
     # Replace old content with newly generated content.
     pattern = re.escape(inject_settings.replace_begin_tag) + "(.*)" + re.escape(inject_settings.replace_end_tag)
@@ -280,8 +279,7 @@ def inject(
             sys.exit(1)
     else:
         # Dump newly generated contents back to file.
-        with open(file, "w") as fp:
-            fp.write(new_content)
+        inject_settings.file.write_text(new_content)
 
 
 @app.command(help="Display the current installed version of paracelsus.")

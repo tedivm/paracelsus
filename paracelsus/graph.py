@@ -95,8 +95,8 @@ def resolve_included_tables(
             if not included:
                 non_existent_tables = include_tables - all_tables
                 raise ValueError(
-                    f"Some tables to include ({non_existent_tables}) don't exist"
-                    "withinthe found tables ({all_tables})."
+                    f"Some tables to include ({non_existent_tables}) don't exist "
+                    f"within the found tables ({all_tables})."
                 )
             return included
         case _:
