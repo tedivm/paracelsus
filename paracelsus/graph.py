@@ -7,6 +7,7 @@ from typing import List, Set, Optional, Dict, Union
 
 from sqlalchemy.schema import MetaData
 
+from .config import Layouts
 from .transformers.dot import Dot
 from .transformers.mermaid import Mermaid
 
@@ -29,7 +30,7 @@ def get_graph_string(
     column_sort: str,
     omit_comments: bool = False,
     max_enum_members: int = 0,
-    layout: Optional[str] = None,
+    layout: Optional[Layouts] = None,
 ) -> str:
     # Update the PYTHON_PATH to allow more module imports.
     sys.path.append(str(os.getcwd()))
