@@ -13,6 +13,8 @@ from paracelsus.config import (
     Layouts,
     ParacelsusSettingsForGraph,
     ParacelsusSettingsForInject,
+    MAX_ENUM_MEMBERS_DEFAULT,
+    SORT_DEFAULT,
 )
 from .graph import get_graph_string, transformers
 from .pyproject import get_pyproject_settings
@@ -48,6 +50,7 @@ def graph(
             resolve_path=True,
             exists=True,
             default_factory=lambda: Path.cwd() / "pyproject.toml",
+            show_default=str(Path.cwd() / "pyproject.toml"),
         ),
     ],
     base_class_path: Annotated[
@@ -85,6 +88,7 @@ def graph(
         Optional[ColumnSorts],
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
+            show_default=str(SORT_DEFAULT.value),
         ),
     ] = None,
     omit_comments: Annotated[
@@ -99,6 +103,7 @@ def graph(
         typer.Option(
             "--max-enum-members",
             help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
+            show_default=str(MAX_ENUM_MEMBERS_DEFAULT),
         ),
     ] = None,
     layout: Annotated[
@@ -140,6 +145,7 @@ def inject(
             resolve_path=True,
             exists=True,
             default_factory=lambda: Path.cwd() / "pyproject.toml",
+            show_default=str(Path.cwd() / "pyproject.toml"),
         ),
     ],
     file: Annotated[
@@ -202,6 +208,7 @@ def inject(
         Optional[ColumnSorts],
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
+            show_default=str(SORT_DEFAULT.value),
         ),
     ] = None,
     omit_comments: Annotated[
@@ -216,6 +223,7 @@ def inject(
         typer.Option(
             "--max-enum-members",
             help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
+            show_default=str(MAX_ENUM_MEMBERS_DEFAULT),
         ),
     ] = None,
     layout: Annotated[
