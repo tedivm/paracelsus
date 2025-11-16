@@ -1,0 +1,10 @@
+[tool.paracelsus]
+base = "example.base:Base"
+imports = [
+  "example.models"
+]
+include_tables = [
+  "users",
+  "posts",
+  "comments"
+]

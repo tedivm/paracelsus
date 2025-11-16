@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Literal
 import pytest
-from unittest.mock import Mock
-from unittest import mock
 
 from typer.testing import CliRunner
 
@@ -141,10 +139,7 @@ def test_inject_column_sort(package_path: Path, column_sort_arg: Literal["key-ba
         mermaid_assert(readme)
 
 
-@mock.patch(
-    "paracelsus.cli.get_pyproject_settings", return_value={"base": "example.base:Base", "imports": ["example.models"]}
-)
-def test_inject_pyproject_configuration(mock_get_pyproject_settings: Mock, package_path: Path):
+def test_inject_pyproject_configuration(package_path: Path):
     """Test that the pyproject.toml configuration is used when base class path is not passed as argument."""
     result = runner.invoke(
         app,
@@ -155,8 +150,6 @@ def test_inject_pyproject_configuration(mock_get_pyproject_settings: Mock, packa
     with open(package_path / "README.md") as fp:
         readme = fp.read()
         mermaid_assert(readme)
-
-    mock_get_pyproject_settings.assert_called_once()
 
 
 def test_version():
@@ -245,3 +238,51 @@ def test_inject_layout(package_path: Path, layout_arg: Literal["dagre", "elk"]):
     with open(package_path / "README.md") as fp:
         readme = fp.read()
         mermaid_assert(readme)
+
+
+def test_inject_layout_with_custom_smaller_config(package_path: Path, expected_mermaid_smaller_graph: str):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            "dagre",
+            "--config",
+            str(package_path / "smaller_graph.config.toml"),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+
+    generated_readme = (package_path / "README.md").read_text()
+
+    assert generated_readme == expected_mermaid_smaller_graph
+
+
+def test_inject_layout_with_custom_complete_config(package_path: Path, expected_mermaid_complete_graph: str):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--layout",
+            "dagre",
+            "--config",
+            str(package_path / "complete_graph.config.toml"),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+
+    generated_readme = (package_path / "README.md").read_text()
+
+    assert generated_readme == expected_mermaid_complete_graph

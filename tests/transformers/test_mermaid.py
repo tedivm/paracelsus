@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy import Column, Enum, MetaData, Table
 
+from paracelsus.config import Layouts
 from paracelsus.transformers.mermaid import Mermaid
 
 from ..utils import mermaid_assert
@@ -84,10 +85,10 @@ def test_mermaid_with_no_layout(metaclass, mermaid_full_string_with_no_layout):
 
 
 def test_mermaid_with_dagre_layout(metaclass, mermaid_full_string_with_dagre_layout):
-    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="dagre")
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout=Layouts.dagre)
     assert str(mermaid) == mermaid_full_string_with_dagre_layout
 
 
 def test_mermaid_with_elk_layout(metaclass, mermaid_full_string_with_elk_layout):
-    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout="elk")
+    mermaid = Mermaid(metaclass=metaclass, column_sort="preserve-order", layout=Layouts.elk)
     assert str(mermaid) == mermaid_full_string_with_elk_layout

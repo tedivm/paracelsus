@@ -1,20 +1,16 @@
-import os
 from pathlib import Path
-from typing import Any, Dict
+from .config import ParacelsusTomlConfig
 
 try:
     import tomllib
-except:  # noqa: E722
+except ImportError:
     import toml as tomllib  # type: ignore
 
 
-def get_pyproject_settings(dir: Path = Path(os.getcwd())) -> Dict[str, Any]:
-    pyproject = dir / "pyproject.toml"
+def get_pyproject_settings(config_file: Path) -> ParacelsusTomlConfig:
+    if not config_file.exists():
+        return ParacelsusTomlConfig()
 
-    if not pyproject.exists():
-        return {}
+    data = tomllib.loads(config_file.read_bytes().decode())
 
-    with open(pyproject, "rb") as f:
-        data = tomllib.loads(f.read().decode())
-
-    return data.get("tool", {}).get("paracelsus", {})
+    return ParacelsusTomlConfig(**data.get("tool", {}).get("paracelsus", {}))

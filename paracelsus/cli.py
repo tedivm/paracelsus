@@ -1,65 +1,55 @@
 import re
 import sys
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from textwrap import dedent
+from typing import List, Optional
 
 import typer
 from typing_extensions import Annotated
-
+from dataclasses import asdict
+from paracelsus.config import (
+    Formats,
+    ColumnSorts,
+    Layouts,
+    ParacelsusSettingsForGraph,
+    ParacelsusSettingsForInject,
+)
 from .graph import get_graph_string, transformers
 from .pyproject import get_pyproject_settings
 
 app = typer.Typer()
 
-PYPROJECT_SETTINGS = get_pyproject_settings()
 
-
-class Formats(str, Enum):
-    mermaid = "mermaid"
-    mmd = "mmd"
-    dot = "dot"
-    gv = "gv"
-
-
-class ColumnSorts(str, Enum):
-    key_based = "key-based"
-    preserve = "preserve-order"
-
-
-class Layouts(str, Enum):
-    dagre = "dagre"
-    elk = "elk"
-
-
-if "column_sort" in PYPROJECT_SETTINGS:
-    SORT_DEFAULT = ColumnSorts(PYPROJECT_SETTINGS["column_sort"]).value
-else:
-    SORT_DEFAULT = ColumnSorts.key_based.value
-
-if "omit_comments" in PYPROJECT_SETTINGS:
-    OMIT_COMMENTS_DEFAULT = PYPROJECT_SETTINGS["omit_comments"]
-else:
-    OMIT_COMMENTS_DEFAULT = False
-
-if "max_enum_members" in PYPROJECT_SETTINGS:
-    MAX_ENUM_MEMBERS_DEFAULT = PYPROJECT_SETTINGS["max_enum_members"]
-else:
-    MAX_ENUM_MEMBERS_DEFAULT = 3
-
-
-def get_base_class(base_class_path: str | None, settings: Dict[str, Any] | None) -> str:
+def get_base_class(base_class_path: str | None, base_from_config: str) -> str:
     if base_class_path:
         return base_class_path
-    if not settings:
-        raise ValueError("`base_class_path` argument must be passed if no pyproject.toml file is present.")
-    if "base" not in settings:
-        raise ValueError("`base_class_path` argument must be passed if not defined in pyproject.toml.")
-    return settings["base"]
+    if base_from_config:
+        return base_from_config
+
+    raise ValueError(
+        dedent(
+            """\
+        Either provide `--base-class-path` argument or define `base` in the pyproject.toml file:
+            [tool.paracelsus]
+            base = "example.base:Base"
+        """
+        )
+    )
 
 
 @app.command(help="Create the graph structure and print it to stdout.")
 def graph(
+    config: Annotated[
+        Path,
+        typer.Option(
+            help="Path to a pyproject.toml file to load configuration from.",
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+            exists=True,
+            default_factory=lambda: Path.cwd() / "pyproject.toml",
+        ),
+    ],
     base_class_path: Annotated[
         Optional[str],
         typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
@@ -92,25 +82,25 @@ def graph(
         Formats, typer.Option(help="The file format to output the generated graph to.")
     ] = Formats.mermaid.value,  # type: ignore # Typer will fail to render the help message, but this code works.
     column_sort: Annotated[
-        ColumnSorts,
+        Optional[ColumnSorts],
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    ] = None,
     omit_comments: Annotated[
-        bool,
+        Optional[bool],
         typer.Option(
             "--omit-comments",
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
-    ] = OMIT_COMMENTS_DEFAULT,
+    ] = None,
     max_enum_members: Annotated[
-        int,
+        Optional[int],
         typer.Option(
             "--max-enum-members",
             help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
         ),
-    ] = MAX_ENUM_MEMBERS_DEFAULT,
+    ] = None,
     layout: Annotated[
         Optional[Layouts],
         typer.Option(
@@ -118,32 +108,40 @@ def graph(
         ),
     ] = None,
 ):
-    settings = get_pyproject_settings()
-    base_class = get_base_class(base_class_path, settings)
+    settings = get_pyproject_settings(config_file=config)
 
-    if "imports" in settings:
-        import_module.extend(settings["imports"])
-
-    if layout and format != Formats.mermaid:
-        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
+    graph_settings = ParacelsusSettingsForGraph(
+        base_class_path=get_base_class(base_class_path, settings.base),
+        import_module=import_module + settings.imports,
+        include_tables=set(include_tables + settings.include_tables),
+        exclude_tables=set(exclude_tables + settings.exclude_tables),
+        python_dir=python_dir,
+        format=format,
+        column_sort=column_sort if column_sort is not None else settings.column_sort,
+        omit_comments=omit_comments if omit_comments is not None else settings.omit_comments,
+        max_enum_members=max_enum_members if max_enum_members is not None else settings.max_enum_members,
+        layout=layout,
+    )
 
     graph_string = get_graph_string(
-        base_class_path=base_class,
-        import_module=import_module,
-        include_tables=set(include_tables + settings.get("include_tables", [])),
-        exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
-        python_dir=python_dir,
-        format=format.value,
-        column_sort=column_sort,
-        omit_comments=omit_comments,
-        max_enum_members=max_enum_members,
-        layout=layout.value if layout else None,
+        **asdict(graph_settings),
     )
     typer.echo(graph_string, nl=not graph_string.endswith("\n"))
 
 
 @app.command(help="Create a graph and inject it as a code field into a markdown file.")
 def inject(
+    config: Annotated[
+        Path,
+        typer.Option(
+            help="Path to a pyproject.toml file to load configuration from.",
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+            exists=True,
+            default_factory=lambda: Path.cwd() / "pyproject.toml",
+        ),
+    ],
     file: Annotated[
         Path,
         typer.Argument(
@@ -201,25 +199,25 @@ def inject(
         ),
     ] = False,
     column_sort: Annotated[
-        ColumnSorts,
+        Optional[ColumnSorts],
         typer.Option(
             help="Specifies the method of sorting columns in diagrams.",
         ),
-    ] = SORT_DEFAULT,  # type: ignore # Typer will fail to render the help message, but this code works.
+    ] = None,
     omit_comments: Annotated[
-        bool,
+        Optional[bool],
         typer.Option(
             "--omit-comments",
             help="Omit SQLAlchemy column comments from the diagram.",
         ),
-    ] = OMIT_COMMENTS_DEFAULT,
+    ] = None,
     max_enum_members: Annotated[
-        int,
+        Optional[int],
         typer.Option(
             "--max-enum-members",
             help="Maximum number of enum members to display in diagrams. 0 means no enum values are shown, any positive number limits the display.",
         ),
-    ] = MAX_ENUM_MEMBERS_DEFAULT,
+    ] = None,
     layout: Annotated[
         Optional[Layouts],
         typer.Option(
@@ -227,48 +225,51 @@ def inject(
         ),
     ] = None,
 ):
-    settings = get_pyproject_settings()
-    base_class = get_base_class(base_class_path, settings)
+    settings = get_pyproject_settings(config_file=config)
 
-    if "imports" in settings:
-        import_module.extend(settings["imports"])
-
-    if layout and format != Formats.mermaid:
-        raise ValueError("The `layout` parameter can only be used with the `mermaid` format.")
+    inject_settings = ParacelsusSettingsForInject(
+        graph_settings=ParacelsusSettingsForGraph(
+            base_class_path=get_base_class(base_class_path, settings.base),
+            import_module=import_module + settings.imports,
+            include_tables=set(include_tables + settings.include_tables),
+            exclude_tables=set(exclude_tables + settings.exclude_tables),
+            python_dir=python_dir,
+            format=format,
+            column_sort=column_sort if column_sort is not None else settings.column_sort,
+            omit_comments=omit_comments if omit_comments is not None else settings.omit_comments,
+            max_enum_members=max_enum_members if max_enum_members is not None else settings.max_enum_members,
+            layout=layout,
+        ),
+        file=file,
+        replace_begin_tag=replace_begin_tag,
+        replace_end_tag=replace_end_tag,
+        check=check,
+    )
 
     # Generate Graph
     graph = get_graph_string(
-        base_class_path=base_class,
-        import_module=import_module,
-        include_tables=set(include_tables + settings.get("include_tables", [])),
-        exclude_tables=set(exclude_tables + settings.get("exclude_tables", [])),
-        python_dir=python_dir,
-        format=format.value,
-        column_sort=column_sort,
-        omit_comments=omit_comments,
-        max_enum_members=max_enum_members,
-        layout=layout.value if layout else None,
+        **asdict(inject_settings.graph_settings),
     )
 
-    comment_format = transformers[format].comment_format  # type: ignore
+    comment_format = transformers[inject_settings.graph_settings.format].comment_format  # type: ignore
 
     # Convert Graph to Injection String
-    graph_piece = f"""{replace_begin_tag}
+    graph_piece = f"""{inject_settings.replace_begin_tag}
 ```{comment_format}
 {graph}
 ```
-{replace_end_tag}"""
+{inject_settings.replace_end_tag}"""
 
     # Get content from current file.
     with open(file, "r") as fp:
         old_content = fp.read()
 
     # Replace old content with newly generated content.
-    pattern = re.escape(replace_begin_tag) + "(.*)" + re.escape(replace_end_tag)
+    pattern = re.escape(inject_settings.replace_begin_tag) + "(.*)" + re.escape(inject_settings.replace_end_tag)
     new_content = re.sub(pattern, graph_piece, old_content, flags=re.MULTILINE | re.DOTALL)
 
     # Return result depends on whether we're in check mode.
-    if check:
+    if inject_settings.check:
         if new_content == old_content:
             # If content is the same then we passed the test.
             typer.echo("No changes detected.")
