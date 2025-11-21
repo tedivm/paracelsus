@@ -1,0 +1,11 @@
+[tool.paracelsus]
+base = "example.cardinalities:Base"
+imports = [
+  "example.cardinalities"
+]
+include_tables = [
+  "some_schema.foo",
+  "some_schema.bar",
+  "some_schema.baz",
+  "some_schema.beep"
+]
