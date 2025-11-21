@@ -1,8 +1,10 @@
 import os
 import shutil
 import tempfile
+from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
+from textwrap import dedent
 from uuid import uuid4
 
 import pytest
@@ -46,10 +48,11 @@ def metaclass():
 
 
 @pytest.fixture
-def package_path():
+def package_path() -> Generator[Path, None, None]:
     template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets"
     with tempfile.TemporaryDirectory() as package_path:
         shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        os.chdir(package_path)
         yield Path(package_path)
 
 
@@ -122,3 +125,90 @@ posts -- comments [label=post, dir=both, arrowhead=crow, arrowtail=none];
 users -- comments [label=author, dir=both, arrowhead=crow, arrowtail=none];
 }
 """
+
+
+@pytest.fixture(name="expected_mermaid_smaller_graph")
+def fixture_expected_mermaid_smaller_graph() -> str:
+    return dedent("""\
+        # Test Directory
+    
+        Please ignore.
+        
+        ## Schema
+        
+        <!-- BEGIN_SQLALCHEMY_DOCS -->
+        ```mermaid
+        
+        ---
+            config:
+                layout: dagre
+        ---
+        erDiagram
+          users {
+            CHAR(32) id PK
+            DATETIME created
+            VARCHAR(100) display_name "nullable"
+          }
+        
+          posts {
+            CHAR(32) id PK
+            CHAR(32) author FK
+            TEXT content "nullable"
+            DATETIME created
+            BOOLEAN live "True if post is published,nullable"
+          }
+        
+          users ||--o{ posts : author
+        
+        ```
+        <!-- END_SQLALCHEMY_DOCS -->
+    """)
+
+
+@pytest.fixture(name="expected_mermaid_complete_graph")
+def fixture_expected_mermaid_complete_graph() -> str:
+    return dedent("""\
+        # Test Directory
+    
+        Please ignore.
+        
+        ## Schema
+        
+        <!-- BEGIN_SQLALCHEMY_DOCS -->
+        ```mermaid
+        
+        ---
+            config:
+                layout: dagre
+        ---
+        erDiagram
+          users {
+            CHAR(32) id PK
+            DATETIME created
+            VARCHAR(100) display_name "nullable"
+          }
+        
+          posts {
+            CHAR(32) id PK
+            CHAR(32) author FK
+            TEXT content "nullable"
+            DATETIME created
+            BOOLEAN live "True if post is published,nullable"
+          }
+        
+          comments {
+            CHAR(32) id PK
+            CHAR(32) author FK
+            CHAR(32) post FK "nullable"
+            TEXT content "nullable"
+            DATETIME created
+            BOOLEAN live "nullable"
+          }
+        
+          users ||--o{ posts : author
+          posts ||--o{ comments : post
+          users ||--o{ comments : author
+        
+        ```
+        <!-- END_SQLALCHEMY_DOCS -->
+    """)

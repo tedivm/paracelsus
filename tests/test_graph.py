@@ -1,5 +1,6 @@
 import pytest
 
+from paracelsus.config import Layouts
 from paracelsus.graph import get_graph_string
 
 from .utils import mermaid_assert
@@ -90,6 +91,6 @@ def test_get_graph_string_with_layout(layout_arg, package_path):
         python_dir=[package_path],
         format="mermaid",
         column_sort="key-based",
-        layout=layout_arg,
+        layout=Layouts(layout_arg),
     )
     mermaid_assert(graph_string)

@@ -233,7 +233,7 @@ To create a PNG file:
 
 ### pyproject.toml
 
-The settings for your project can be saved directly in the `pyprojects.toml` file of your project.
+Some of the settings for your project can be saved directly in the `pyprojects.toml` file of your project.
 
 ```toml
 [tool.paracelsus]
@@ -256,7 +256,18 @@ exclude_tables = [
 ]
 column_sort = "preserve-order"
 omit_comments = false
+max_enum_members = 10
 ```
+
+### Alternative config files
+
+It is possible to use an alternative configuration file for both `graph` and `inject` by passing the `--config` flag to the CLI.
+
+```bash
+paracelsus graph --config path/to/alternative_pyproject.toml
+```
+
+This file does not need to be named `pyproject.toml`, as long as it is a valid TOML file and contains a `[tool.paracelsus]` section.
 
 ## Sponsorship
 

@@ -6,6 +6,7 @@ import sqlalchemy
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
 from .utils import sort_columns
+from paracelsus.config import Layouts
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ class Mermaid:
     column_sort: str
     omit_comments: bool
     max_enum_members: int
-    layout: Optional[str]
+    layout: Optional[Layouts]
 
     def __init__(
         self,
@@ -24,13 +25,13 @@ class Mermaid:
         column_sort: str,
         omit_comments: bool = False,
         max_enum_members: int = 0,
-        layout: Optional[str] = None,
+        layout: Optional[Layouts] = None,
     ) -> None:
         self.metadata = metaclass
         self.column_sort = column_sort
         self.omit_comments = omit_comments
         self.max_enum_members = max_enum_members
-        self.layout: Optional[str] = layout
+        self.layout: Optional[Layouts] = layout
 
     def _table(self, table: Table) -> str:
         output = f"  {table.name}"
@@ -128,7 +129,7 @@ class Mermaid:
             yaml_front_matter = textwrap.dedent(f"""
             ---
                 config:
-                    layout: {self.layout}
+                    layout: {self.layout.value}
             ---
             """)
             output = yaml_front_matter + output

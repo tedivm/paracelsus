@@ -5,7 +5,7 @@ import logging
 from sqlalchemy.sql.schema import MetaData, Table
 
 from .utils import sort_columns
-
+from paracelsus.config import Layouts
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +18,13 @@ class Dot:
         metaclass: MetaData,
         column_sort: str,
         omit_comments: bool = False,
-        layout: Optional[str] = None,
+        layout: Optional[Layouts] = None,
     ) -> None:
         self.metadata: MetaData = metaclass
         self.graph: pydot.Dot = pydot.Dot("database", graph_type="graph")
         self.column_sort: str = column_sort
         self.omit_comments: bool = omit_comments
-        self.layout: Optional[str] = layout
+        self.layout: Optional[Layouts] = layout
 
         for table in self.metadata.tables.values():
             node = pydot.Node(name=table.name)
