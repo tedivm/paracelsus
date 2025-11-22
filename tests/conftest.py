@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import tempfile
 from collections.abc import Generator
 from datetime import datetime, timezone
@@ -53,6 +54,14 @@ def package_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as package_path:
         shutil.copytree(template_path, package_path, dirs_exist_ok=True)
         os.chdir(package_path)
+        # RATIONALE: Purge cached 'example' modules so the new temp directory path is used for imports.
+        # Without this, earlier tests leave sys.modules['example'] with a __path__ pointing at a deleted
+        # temp directory. Later tests then fail to import submodules (e.g. example.cardinalities) because
+        # Python reuses the stale package object and doesn't refresh its search path. Removing only these
+        # entries enforces a clean import and prevents cross-test leakage / flakiness.
+        for name in list(sys.modules.keys()):
+            if name == "example" or name.startswith("example."):
+                del sys.modules[name]
         yield Path(package_path)
 
 
@@ -209,6 +218,47 @@ def fixture_expected_mermaid_complete_graph() -> str:
           posts ||--o{ comments : post
           users ||--o{ comments : author
         
+        ```
+        <!-- END_SQLALCHEMY_DOCS -->
+    """)
+
+
+@pytest.fixture(name="expected_mermaid_cardinalities_graph")
+def fixture_expected_mermaid_cardinalities_graph() -> str:
+    return dedent("""\
+        # Test Directory
+    
+        Please ignore.
+        
+        ## Schema
+        
+        <!-- BEGIN_SQLALCHEMY_DOCS -->
+        ```mermaid
+        erDiagram
+          bar {
+            CHAR(32) id PK
+          }
+
+          baz {
+            CHAR(32) id PK
+          }
+
+          beep {
+            CHAR(32) id PK
+          }
+
+          foo {
+            CHAR(32) id PK
+            CHAR(32) bar_id FK
+            CHAR(32) baz_id FK
+            CHAR(32) beep_id FK
+            VARCHAR boop
+          }
+
+          bar ||--o| foo : bar_id
+          baz ||--o| foo : baz_id
+          beep ||--o{ foo : beep_id
+
         ```
         <!-- END_SQLALCHEMY_DOCS -->
     """)

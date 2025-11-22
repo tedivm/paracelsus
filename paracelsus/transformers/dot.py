@@ -4,7 +4,7 @@ import pydot  # type: ignore
 import logging
 from sqlalchemy.sql.schema import MetaData, Table
 
-from .utils import sort_columns
+from .utils import sort_columns, is_unique
 from paracelsus.config import Layouts
 
 logger = logging.getLogger(__name__)
@@ -52,12 +52,12 @@ class Dot:
                     edge.set_dir("both")
 
                     edge.set_arrowhead("none")
-                    if not column.unique:
+                    if not is_unique(column):
                         edge.set_arrowhead("crow")
 
                     l_column = self.metadata.tables[left_table].columns[left_column]
                     edge.set_arrowtail("none")
-                    if not l_column.unique and not l_column.primary_key:
+                    if not is_unique(l_column) and not l_column.primary_key:
                         edge.set_arrowtail("crow")
 
                     self.graph.add_edge(edge)
@@ -73,7 +73,7 @@ class Dot:
             if len(column.foreign_keys) > 0:
                 attributes.add("Foreign Key")
 
-            if column.unique:
+            if is_unique(column) and not column.primary_key:
                 attributes.add("Unique")
 
             column_output += f'        <tr><td align="left">{column.type}</td><td align="left">{column.name}</td><td>{", ".join(sorted(attributes))}</td></tr>\n'

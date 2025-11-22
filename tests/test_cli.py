@@ -286,3 +286,23 @@ def test_inject_layout_with_custom_complete_config(package_path: Path, expected_
     generated_readme = (package_path / "README.md").read_text()
 
     assert generated_readme == expected_mermaid_complete_graph
+
+
+def test_inject_cardinalities_mermaid(package_path: Path, expected_mermaid_cardinalities_graph: str):
+    result = runner.invoke(
+        app,
+        [
+            "inject",
+            str(package_path / "README.md"),
+            "--python-dir",
+            str(package_path),
+            "--config",
+            str(package_path / "cardinalities.config.toml"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+
+    generated_readme = (package_path / "README.md").read_text()
+
+    assert generated_readme == expected_mermaid_cardinalities_graph

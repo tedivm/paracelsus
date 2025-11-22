@@ -5,7 +5,7 @@ from typing import Optional
 import sqlalchemy
 from sqlalchemy.sql.schema import Column, MetaData, Table
 
-from .utils import sort_columns
+from .utils import sort_columns, is_unique
 from paracelsus.config import Layouts
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class Mermaid:
                 column_str += " PK"
         elif len(column.foreign_keys) > 0:
             column_str += " FK"
-        elif column.unique:
+        elif is_unique(column):
             column_str += " UK"
 
         if column.comment and not self.omit_comments:
@@ -94,7 +94,7 @@ class Mermaid:
         column_name = column.name
         right_table = column.table.name
 
-        if column.unique:
+        if is_unique(column):
             right_operand = "o|"
         else:
             right_operand = "o{"
@@ -115,7 +115,7 @@ class Mermaid:
                 continue
 
             lcolumn = self.metadata.tables[left_table].columns[left_column]
-            if lcolumn.unique or lcolumn.primary_key:
+            if is_unique(lcolumn):
                 left_operand = "||"
             else:
                 left_operand = "}o"
