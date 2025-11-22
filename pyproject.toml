@@ -45,8 +45,8 @@ readme = {file = ["README.md"]}
 [tool.setuptools.package-data]
 paracelsus = ["py.typed"]
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+exclude = ["tests*", "docs*"]
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0-dev"
