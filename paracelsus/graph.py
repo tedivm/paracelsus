@@ -3,6 +3,7 @@ import os
 import sys
 from pathlib import Path
 import re
+import pkgutil
 from typing import List, Set, Optional, Dict, Union
 
 from sqlalchemy.schema import MetaData
@@ -18,6 +19,46 @@ transformers: Dict[str, type[Union[Mermaid, Dot]]] = {
     "gv": Dot,
 }
 
+def find_modules_by_pattern(pattern: str) -> List[str]:
+    """Finds all modules that match the glob pattern."""
+    parts = pattern.split(".")
+
+    star_index = None
+    for i, part in enumerate(parts):
+        if part == "*":
+            star_index = i
+            break
+    
+    prefix_parts = parts[:star_index]
+    suffix_parts = parts[star_index + 1:]
+
+    if not suffix_parts:
+        raise ValueError(
+            f"Glob pattern '{pattern}' must specify a module name after '*'. "
+        )
+
+    base_package_name = ".".join(prefix_parts)
+    base_package = importlib.import_module(base_package_name)
+    base_path = base_package.__path__[0]
+
+    found_modules = []
+
+    for importer, modname, ispkg in pkgutil.iter_modules([base_path]):
+        # Form a subpackage name
+        subpackage_name = f"{base_package_name}.{modname}"
+
+        # Form the full name of the target module
+        target_module_name = f"{subpackage_name}.{'.'.join(suffix_parts)}"
+
+        # Check that the module exists and add it to the list.
+        try:
+            importlib.import_module(target_module_name)
+            found_modules.append(target_module_name)
+        except ImportError:
+            continue
+    
+    return found_modules
+        
 
 def get_graph_string(
     *,
@@ -48,10 +89,26 @@ def get_graph_string(
     # These modules aren't actually used in any way, so they are discarded.
     # They are also imported in scope of this function to prevent namespace pollution.
     for module in import_module:
-        if ":*" in module:
-            # Sure, execs are gross, but this is the only way to dynamically import wildcards.
-            exec(f"from {module[:-2]} import *")
+        needs_wildcards_import = module.endswith(":*")
+
+        search_pattern = module[:-2] if needs_wildcards_import else module
+
+        if "*" in search_pattern:
+            # This is a glob pattern, find all the corresponding modules
+            found_models = find_modules_by_pattern(search_pattern)
+
+            for found_model in found_models:
+                if needs_wildcards_import:
+                    # Combination: glob search + wildcard import
+                    exec(f"from {found_model} import *")
+                else:
+                    # Glob search only, normal import
+                    importlib.import_module(found_model)
+        elif needs_wildcards_import:
+            # Wildcard import only
+            exec(f"from {search_pattern} import *")
         else:
+            # Normal module import
             importlib.import_module(module)
 
     # Grab a transformer.
