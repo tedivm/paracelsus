@@ -20,13 +20,40 @@ def dot_assert(output: str) -> None:
     assert '<tr><td colspan="3" bgcolor="lightblue"><b>posts</b></td></tr>' in output
     assert '<tr><td colspan="3" bgcolor="lightblue"><b>comments</b></td></tr>' in output
 
-    assert "users -- posts [label=author, dir=both, arrowhead=crow, arrowtail=none];" in output
-    assert "posts -- comments [label=post, dir=both, arrowhead=crow, arrowtail=none];" in output
-    assert "users -- comments [label=author, dir=both, arrowhead=crow, arrowtail=none];" in output
+    # Check for edge relationships with flexible attribute ordering
+    _assert_dot_edge(output, "users", "posts", "author", "crow", "none")
+    _assert_dot_edge(output, "posts", "comments", "post", "crow", "none")
+    _assert_dot_edge(output, "users", "comments", "author", "crow", "none")
 
     assert '<tr><td align="left">CHAR(32)</td><td align="left">author</td><td>Foreign Key</td></tr>' in output
     assert '<tr><td align="left">CHAR(32)</td><td align="left">post</td><td>Foreign Key</td></tr>' in output
     assert '<tr><td align="left">DATETIME</td><td align="left">created</td><td></td></tr>' in output
+
+
+def _assert_dot_edge(
+    output: str,
+    left_table: str,
+    right_table: str,
+    label: str,
+    arrowhead: str,
+    arrowtail: str,
+) -> None:
+    """Assert that a dot edge exists with the expected attributes, regardless of order."""
+    import re
+
+    # Match edge line with flexible whitespace and attribute ordering
+    pattern = rf"{left_table}\s+--\s+{right_table}\s+\[(.*?)\];"
+    match = re.search(pattern, output)
+
+    assert match, f"Edge '{left_table} -- {right_table}' not found in output"
+
+    attributes = match.group(1)
+
+    # Check each required attribute is present
+    assert f"label={label}" in attributes, f"label={label} not found in edge attributes: {attributes}"
+    assert "dir=both" in attributes, f"dir=both not found in edge attributes: {attributes}"
+    assert f"arrowhead={arrowhead}" in attributes, f"arrowhead={arrowhead} not found in edge attributes: {attributes}"
+    assert f"arrowtail={arrowtail}" in attributes, f"arrowtail={arrowtail} not found in edge attributes: {attributes}"
 
     trailing_newline_assert(output)
 

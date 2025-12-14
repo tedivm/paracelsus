@@ -1,21 +1,23 @@
 import re
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from textwrap import dedent
 from typing import List, Optional
 
 import typer
 from typing_extensions import Annotated
-from dataclasses import asdict
+
 from paracelsus.config import (
-    Formats,
+    MAX_ENUM_MEMBERS_DEFAULT,
+    SORT_DEFAULT,
     ColumnSorts,
+    Formats,
     Layouts,
     ParacelsusSettingsForGraph,
     ParacelsusSettingsForInject,
-    MAX_ENUM_MEMBERS_DEFAULT,
-    SORT_DEFAULT,
 )
+
 from .graph import get_graph_string, transformers
 from .pyproject import get_pyproject_settings
 
@@ -112,6 +114,14 @@ def graph(
             help="Specifies the layout of the diagram. Only applicable for mermaid format.",
         ),
     ] = None,
+    type_parameter_delimiter: Annotated[
+        Optional[str],
+        typer.Option(
+            "--type-parameter-delimiter",
+            help="Delimiter to use for type parameters in mermaid diagrams (e.g., NUMERIC(10-2)). Cannot contain commas or spaces.",
+            show_default="-",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings(config_file=config)
 
@@ -126,6 +136,9 @@ def graph(
         omit_comments=omit_comments if omit_comments is not None else settings.omit_comments,
         max_enum_members=max_enum_members if max_enum_members is not None else settings.max_enum_members,
         layout=layout,
+        type_parameter_delimiter=type_parameter_delimiter
+        if type_parameter_delimiter is not None
+        else settings.type_parameter_delimiter,
     )
 
     graph_string = get_graph_string(
@@ -232,6 +245,14 @@ def inject(
             help="Specifies the layout of the diagram. Only applicable for mermaid format.",
         ),
     ] = None,
+    type_parameter_delimiter: Annotated[
+        Optional[str],
+        typer.Option(
+            "--type-parameter-delimiter",
+            help="Delimiter to use for type parameters in mermaid diagrams (e.g., NUMERIC(10-2)). Cannot contain commas or spaces.",
+            show_default="-",
+        ),
+    ] = None,
 ):
     settings = get_pyproject_settings(config_file=config)
 
@@ -247,6 +268,9 @@ def inject(
             omit_comments=omit_comments if omit_comments is not None else settings.omit_comments,
             max_enum_members=max_enum_members if max_enum_members is not None else settings.max_enum_members,
             layout=layout,
+            type_parameter_delimiter=type_parameter_delimiter
+            if type_parameter_delimiter is not None
+            else settings.type_parameter_delimiter,
         ),
         file=file,
         replace_begin_tag=replace_begin_tag,

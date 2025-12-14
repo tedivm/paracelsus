@@ -1,5 +1,5 @@
+from dataclasses import dataclass, field
 from enum import Enum
-from dataclasses import field, dataclass
 from pathlib import Path
 from typing import Final
 
@@ -24,6 +24,7 @@ class Layouts(str, Enum):
 SORT_DEFAULT: Final[ColumnSorts] = ColumnSorts.key_based
 OMIT_COMMENTS_DEFAULT: Final[bool] = False
 MAX_ENUM_MEMBERS_DEFAULT: Final[int] = 3
+TYPE_PARAMETER_DELIMITER_DEFAULT: Final[str] = "-"
 
 
 def validate_layout(*, format: Formats, layout: Layouts | None) -> None:
@@ -46,6 +47,7 @@ class ParacelsusTomlConfig:
     column_sort: ColumnSorts = SORT_DEFAULT
     omit_comments: bool = OMIT_COMMENTS_DEFAULT
     max_enum_members: int = MAX_ENUM_MEMBERS_DEFAULT
+    type_parameter_delimiter: str = TYPE_PARAMETER_DELIMITER_DEFAULT
 
 
 @dataclass(frozen=True)
@@ -66,6 +68,7 @@ class ParacelsusSettingsForGraph:
     omit_comments: bool
     max_enum_members: int
     layout: Layouts | None
+    type_parameter_delimiter: str
 
     def __post_init__(self) -> None:
         validate_layout(format=self.format, layout=self.layout)
