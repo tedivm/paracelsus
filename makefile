@@ -107,6 +107,24 @@ dapperdata_check:
 .PHONY: tomlsort_check
 tomlsort_check:
 	$(PYTHON_ENV) toml-sort $$(find . -not -path "./.venv/*" -name "*.toml") --check
+
+#
+# Pydot Version Testing
+#
+
+.PHONY: test_pydot_v3
+test_pydot_v3:
+	$(PYTHON) -m pip install "pydot>=3.0,<4.0"
+	$(PYTHON) -m pytest tests/ -v
+
+.PHONY: test_pydot_v4
+test_pydot_v4:
+	$(PYTHON) -m pip install "pydot>=4.0,<5.0"
+	$(PYTHON) -m pytest tests/ -v
+
+.PHONY: test_pydot_all_versions
+test_pydot_all_versions: test_pydot_v3 test_pydot_v4
+
 #
 # Packaging
 #

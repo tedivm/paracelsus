@@ -1,11 +1,13 @@
+import logging
 from typing import ClassVar, Optional
 
-import pydot  # type: ignore
-import logging
 from sqlalchemy.sql.schema import MetaData, Table
 
-from .utils import sort_columns, is_unique
+from paracelsus.compat.pydot_compat import Dot as PydotDot
+from paracelsus.compat.pydot_compat import Edge, Node
 from paracelsus.config import Layouts
+
+from .utils import is_unique, sort_columns
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +23,16 @@ class Dot:
         layout: Optional[Layouts] = None,
     ) -> None:
         self.metadata: MetaData = metaclass
-        self.graph: pydot.Dot = pydot.Dot("database", graph_type="graph")
+        self.graph: PydotDot = PydotDot("database", graph_type="graph")
         self.column_sort: str = column_sort
         self.omit_comments: bool = omit_comments
         self.layout: Optional[Layouts] = layout
 
         for table in self.metadata.tables.values():
-            node = pydot.Node(name=table.name)
-            node.set_label(self._table_label(table))
-            node.set_shape("none")
-            node.set_margin("0")
+            node = Node(name=table.name)
+            node.set("label", self._table_label(table))
+            node.set("shape", "none")
+            node.set("margin", "0")
             self.graph.add_node(node)
             for column in table.columns:
                 for foreign_key in column.foreign_keys:
@@ -47,18 +49,18 @@ class Dot:
                         )
                         continue
 
-                    edge = pydot.Edge(left_table.split(".")[-1], table.name)
-                    edge.set_label(column.name)
-                    edge.set_dir("both")
+                    edge = Edge(left_table.split(".")[-1], table.name)
+                    edge.set("label", column.name)
+                    edge.set("dir", "both")
 
-                    edge.set_arrowhead("none")
+                    edge.set("arrowhead", "none")
                     if not is_unique(column):
-                        edge.set_arrowhead("crow")
+                        edge.set("arrowhead", "crow")
 
                     l_column = self.metadata.tables[left_table].columns[left_column]
-                    edge.set_arrowtail("none")
+                    edge.set("arrowtail", "none")
                     if not is_unique(l_column) and not l_column.primary_key:
-                        edge.set_arrowtail("crow")
+                        edge.set("arrowtail", "crow")
 
                     self.graph.add_edge(edge)
 
