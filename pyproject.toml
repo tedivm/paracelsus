@@ -5,7 +5,8 @@ requires = ["setuptools>=67.0", "setuptools_scm[toml]>=7.1"]
 [project]
 authors = [{"name" = "Robert Hafner"}]
 dependencies = [
-  "pydot < 4.0",
+  "pydot >= 3.0, < 5.0",
+  "packaging",
   "sqlalchemy",
   "typer",
   "toml; python_version < '3.11'"
