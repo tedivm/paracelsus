@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
-import pytest
 
+import pytest
 from typer.testing import CliRunner
 
 from paracelsus.cli import app
@@ -306,3 +306,24 @@ def test_inject_cardinalities_mermaid(package_path: Path, expected_mermaid_cardi
     generated_readme = (package_path / "README.md").read_text()
 
     assert generated_readme == expected_mermaid_cardinalities_graph
+
+
+def test_graph_with_custom_type_delimiter(package_path: Path):
+    """Test that custom type parameter delimiter works via CLI."""
+    result = runner.invoke(
+        app,
+        [
+            "graph",
+            "example.base:Base",
+            "--import-module",
+            "example.models",
+            "--python-dir",
+            str(package_path),
+            "--type-parameter-delimiter",
+            "_",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    # The output should be valid mermaid
+    mermaid_assert(result.stdout)

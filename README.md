@@ -8,10 +8,15 @@ Paracelsus generates Entity Relationship Diagrams by reading your SQLAlchemy mod
     - [Installation](#installation)
     - [Basic CLI Usage](#basic-cli-usage)
     - [Importing Models](#importing-models)
+    - [Include or Exclude tables](#include-or-exclude-tables)
+    - [Specify Column Sort Order](#specify-column-sort-order)
+    - [Omit Comments](#omit-comments)
+    - [Type Parameter Delimiter](#type-parameter-delimiter)
     - [Generate Mermaid Diagrams](#generate-mermaid-diagrams)
     - [Inject Mermaid Diagrams](#inject-mermaid-diagrams)
     - [Creating Images](#creating-images)
     - [pyproject.toml](#pyprojecttoml)
+    - [Alternative config files](#alternative-config-files)
   - [Sponsorship](#sponsorship)
 
 ## Features
@@ -129,6 +134,24 @@ paracelsus graph example_app.models.base:Base \
 
 By default, SQLAlchemy column comments are included in the generated mermaid diagrams. You can omit these comments using the `--omit-comments` flag, which [might improve](https://github.com/tedivm/paracelsus/issues/32) legibility.
 
+### Type Parameter Delimiter
+
+Some SQLAlchemy column types include parameters with commas, such as `NUMERIC(10, 2)` or `DECIMAL(8, 3)`. Since Mermaid's ER diagram parser uses commas as structural separators for attribute keys (PK, FK, UK), these commas can break diagram rendering.
+
+Paracelsus automatically handles this by replacing commas in type parameters with a delimiter. By default, it uses a hyphen (`-`), converting `NUMERIC(10, 2)` to `NUMERIC(10-2)`.
+
+You can customize this delimiter using the `--type-parameter-delimiter` option:
+
+```bash
+paracelsus graph example_app.models.base:Base \
+  --import-module "example_app.models.users" \
+  --type-parameter-delimiter "_"
+```
+
+This would convert `NUMERIC(10, 2)` to `NUMERIC(10_2)`.
+
+**Note:** The delimiter cannot contain commas or spaces, as these characters would cause the same parsing issues in Mermaid diagrams.
+
 ### Generate Mermaid Diagrams
 
 
@@ -243,7 +266,7 @@ imports = [
 ]
 ```
 
-This also allows users to set excludes, includes, and column sorting.
+This also allows users to set excludes, includes, column sorting, and type parameter delimiter.
 
 ```toml
 [tool.paracelsus]
@@ -257,6 +280,7 @@ exclude_tables = [
 column_sort = "preserve-order"
 omit_comments = false
 max_enum_members = 10
+type_parameter_delimiter = "-"  # Default is hyphen, cannot contain commas or spaces
 ```
 
 ### Alternative config files
