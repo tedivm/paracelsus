@@ -1,6 +1,7 @@
 import re
 import sys
 from dataclasses import asdict
+from difflib import unified_diff
 from pathlib import Path
 from textwrap import dedent
 from typing import List, Optional
@@ -307,7 +308,20 @@ def inject(
             sys.exit(0)
         else:
             # If content is different then we failed the test.
-            typer.echo("Changes detected.")
+            # Generate unified diff
+            diff = unified_diff(
+                old_content.splitlines(keepends=True),
+                new_content.splitlines(keepends=True),
+                fromfile='old',
+                tofile='new',
+                lineterm=''
+            )
+            
+            typer.echo("Changes detected. Diff:")
+            typer.echo("")
+            for line in diff:
+                typer.echo(line.rstrip())
+            
             sys.exit(1)
     else:
         # Dump newly generated contents back to file.
