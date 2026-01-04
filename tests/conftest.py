@@ -68,10 +68,13 @@ def package_path() -> Generator[Path, None, None]:
 @pytest.fixture()
 def mermaid_full_string_preseve_column_sort() -> str:
     return """erDiagram
-  users {
+  comments {
     CHAR(32) id PK
-    VARCHAR(100) display_name "nullable"
     DATETIME created
+    CHAR(32) post FK "nullable"
+    CHAR(32) author FK
+    BOOLEAN live "nullable"
+    TEXT content "nullable"
   }
 
   posts {
@@ -82,18 +85,15 @@ def mermaid_full_string_preseve_column_sort() -> str:
     TEXT content "nullable"
   }
 
-  comments {
+  users {
     CHAR(32) id PK
+    VARCHAR(100) display_name "nullable"
     DATETIME created
-    CHAR(32) post FK "nullable"
-    CHAR(32) author FK
-    BOOLEAN live "nullable"
-    TEXT content "nullable"
   }
 
-  users ||--o{ posts : author
   posts ||--o{ comments : post
   users ||--o{ comments : author
+  users ||--o{ posts : author
 """
 
 
@@ -153,18 +153,18 @@ def fixture_expected_mermaid_smaller_graph() -> str:
                 layout: dagre
         ---
         erDiagram
-          users {
-            CHAR(32) id PK
-            DATETIME created
-            VARCHAR(100) display_name "nullable"
-          }
-        
           posts {
             CHAR(32) id PK
             CHAR(32) author FK
             TEXT content "nullable"
             DATETIME created
             BOOLEAN live "True if post is published,nullable"
+          }
+        
+          users {
+            CHAR(32) id PK
+            DATETIME created
+            VARCHAR(100) display_name "nullable"
           }
         
           users ||--o{ posts : author
@@ -191,10 +191,13 @@ def fixture_expected_mermaid_complete_graph() -> str:
                 layout: dagre
         ---
         erDiagram
-          users {
+          comments {
             CHAR(32) id PK
+            CHAR(32) author FK
+            CHAR(32) post FK "nullable"
+            TEXT content "nullable"
             DATETIME created
-            VARCHAR(100) display_name "nullable"
+            BOOLEAN live "nullable"
           }
         
           posts {
@@ -205,18 +208,15 @@ def fixture_expected_mermaid_complete_graph() -> str:
             BOOLEAN live "True if post is published,nullable"
           }
         
-          comments {
+          users {
             CHAR(32) id PK
-            CHAR(32) author FK
-            CHAR(32) post FK "nullable"
-            TEXT content "nullable"
             DATETIME created
-            BOOLEAN live "nullable"
+            VARCHAR(100) display_name "nullable"
           }
         
-          users ||--o{ posts : author
           posts ||--o{ comments : post
           users ||--o{ comments : author
+          users ||--o{ posts : author
         
         ```
         <!-- END_SQLALCHEMY_DOCS -->

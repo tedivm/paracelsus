@@ -173,10 +173,10 @@ class Mermaid:
             """)
             output = yaml_front_matter + output
         output += "erDiagram\n"
-        for table in self.metadata.tables.values():
+        for table in sorted(self.metadata.tables.values(), key=lambda t: t.name):
             output += self._table(table)
 
-        for table in self.metadata.tables.values():
+        for table in sorted(self.metadata.tables.values(), key=lambda t: t.name):
             for column in table.columns.values():
                 if len(column.foreign_keys) > 0:
                     output += self._relationships(column)
