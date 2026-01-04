@@ -312,16 +312,16 @@ def inject(
             diff = unified_diff(
                 old_content.splitlines(keepends=True),
                 new_content.splitlines(keepends=True),
-                fromfile='old',
-                tofile='new',
-                lineterm=''
+                fromfile="old",
+                tofile="new",
+                lineterm="",
             )
-            
+
             typer.echo("Changes detected. Diff:")
             typer.echo("")
             for line in diff:
                 typer.echo(line.rstrip())
-            
+
             sys.exit(1)
     else:
         # Dump newly generated contents back to file.
