@@ -1,18 +1,43 @@
-def mermaid_assert(output: str) -> None:
-    assert "users {" in output
-    assert "posts {" in output
-    assert "comments {" in output
+from typing import Union
+from sqlalchemy.schema import MetaData
+from paracelsus.graph import compare_metadata
 
-    assert "users ||--o{ posts : author" in output
-    assert "posts ||--o{ comments : post" in output
-    assert "users ||--o{ comments : author" in output
 
-    assert "CHAR(32) author FK" in output
-    assert 'CHAR(32) post FK "nullable"' in output
-    assert 'BOOLEAN live "True if post is published,nullable"' in output
-    assert "DATETIME created" in output
+def mermaid_assert(
+    actual: Union[str, MetaData],
+    expected: Union[MetaData, None] = None,
+    omit_comments: bool = False,
+) -> None:
+    """
+    Asserts that a mermaid graph (string or MetaData) matches expected structure.
 
-    trailing_newline_assert(output)
+    This function supports two modes:
+    1. Legacy mode: If actual is a string, performs basic string assertions (for backward compatibility)
+    2. Dynamic mode: If actual is MetaData, compares it with expected MetaData
+    """
+    # Legacy mode: string comparison (for backward compatibility)
+    if isinstance(actual, str):
+        # Basic assertions for backward compatibility
+        assert "users {" in actual
+        assert "posts {" in actual
+        assert "comments {" in actual
+
+        assert "users ||--o{ posts : author" in actual
+        assert "posts ||--o{ comments : post" in actual
+        assert "users ||--o{ comments : author" in actual
+
+        assert "CHAR(32) author FK" in actual
+        assert 'CHAR(32) post FK "nullable"' in actual
+        assert 'BOOLEAN live "True if post is published,nullable"' in actual
+        assert "DATETIME created" in actual
+
+        trailing_newline_assert(actual)
+
+    # Dynamic mode: MetaData comparison
+    else:
+        if expected is None:
+            raise ValueError("expected MetaData is required when actual is MetaData")
+        compare_metadata(actual, expected, omit_comments=omit_comments)
 
 
 def dot_assert(output: str) -> None:

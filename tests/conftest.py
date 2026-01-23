@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
+from functools import singledispatch
 from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +14,42 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import declarative_base, mapped_column
 
 UTC = timezone.utc
+
+
+@singledispatch
+def setup_sys_path_for_test(paths, module_prefix: str = "example") -> list[str]:
+    # Clear module cache
+    for name in list(sys.modules.keys()):
+        if name == module_prefix or name.startswith(f"{module_prefix}."):
+            del sys.modules[name]
+
+    # Add paths to sys.path
+    path_strings = []
+    for path in paths:
+        path_str = str(path)
+        path_strings.append(path_str)
+        sys.path.insert(0, path_str)
+
+    return path_strings
+
+
+@setup_sys_path_for_test.register
+def _(paths: Path, module_prefix: str = "example") -> str:
+    result = setup_sys_path_for_test([paths], module_prefix)
+
+    return result[0]
+
+
+@singledispatch
+def cleanup_sys_path(paths) -> None:
+    for path_str in paths:
+        if path_str in sys.path:
+            sys.path.remove(path_str)
+
+
+@cleanup_sys_path.register
+def _(paths: str) -> None:
+    cleanup_sys_path([paths])
 
 
 @pytest.fixture
@@ -262,3 +299,113 @@ def fixture_expected_mermaid_cardinalities_graph() -> str:
         ```
         <!-- END_SQLALCHEMY_DOCS -->
     """)
+
+
+@pytest.fixture
+def single_level_package_path() -> Generator[Path, None, None]:
+    """Create a package structure with single-level subpackages for testing pattern example.*.models."""
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "single_level"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        package_dir = Path(package_path)
+        os.chdir(package_path)
+
+        path_str = setup_sys_path_for_test(package_dir)
+        try:
+            yield Path(package_path)
+        finally:
+            cleanup_sys_path(path_str)
+
+
+@pytest.fixture
+def nested_package_path() -> Generator[Path, None, None]:
+    """Create a package structure with nested subpackages for testing multi-level glob patterns."""
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "nested"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        package_dir = Path(package_path)
+        os.chdir(package_path)
+
+        path_str = setup_sys_path_for_test(package_dir)
+        try:
+            yield Path(package_path)
+        finally:
+            cleanup_sys_path(path_str)
+
+
+@pytest.fixture
+def multi_star_package_path() -> Generator[Path, None, None]:
+    """Create a package structure for testing patterns with multiple stars."""
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "multi_star"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        package_dir = Path(package_path)
+        os.chdir(package_path)
+
+        path_str = setup_sys_path_for_test(package_dir)
+        try:
+            yield Path(package_path)
+        finally:
+            cleanup_sys_path(path_str)
+
+
+@pytest.fixture
+def character_classes_package_path() -> Generator[Path, None, None]:
+    """Create a package structure for testing character classes and ranges patterns."""
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "character_classes"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        package_dir = Path(package_path)
+        os.chdir(package_path)
+
+        path_str = setup_sys_path_for_test(package_dir)
+        try:
+            yield Path(package_path)
+        finally:
+            cleanup_sys_path(path_str)
+
+
+@pytest.fixture
+def recursive_package_path() -> Generator[Path, None, None]:
+    """Create a package structure for testing recursive lookup patterns (**)."""
+    template_path = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "recursive"
+    with tempfile.TemporaryDirectory() as package_path:
+        shutil.copytree(template_path, package_path, dirs_exist_ok=True)
+        package_dir = Path(package_path)
+        os.chdir(package_path)
+
+        path_str = setup_sys_path_for_test(package_dir)
+        try:
+            yield Path(package_path)
+        finally:
+            cleanup_sys_path(path_str)
+
+
+@pytest.fixture
+def namespace_package_path() -> Generator[Path, None, None]:
+    """Create a namespace package structure (PEP 420) for testing."""
+    template_base = Path(os.path.dirname(os.path.realpath(__file__))) / "assets" / "namespace"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+
+        # Copy both projects
+        for project_key in range(1, 3):
+            project_dir = f"project{project_key}"
+            shutil.copytree(template_base / project_dir, temp_path / project_dir, dirs_exist_ok=True)
+
+        project1 = temp_path / "project1"
+        project2 = temp_path / "project2"
+
+        os.chdir(str(temp_path))
+
+        path_strings = setup_sys_path_for_test([project1, project2])
+
+        # Import example to check that it is a namespace package
+        import example
+
+        assert hasattr(example, "__path__"), "example should be a namespace package with __path__ attribute"
+
+        try:
+            yield temp_path
+        finally:
+            cleanup_sys_path(path_strings)
