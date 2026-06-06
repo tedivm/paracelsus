@@ -58,7 +58,7 @@ def graph(
     ],
     base_class_path: Annotated[
         Optional[str],
-        typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
+        typer.Argument(help="The SQLAlchemy declarative base class or MetaData object used by the database to graph."),
     ] = None,
     import_module: Annotated[
         List[str],
@@ -174,7 +174,7 @@ def inject(
     ],
     base_class_path: Annotated[
         Optional[str],
-        typer.Argument(help="The SQLAlchemy base class used by the database to graph."),
+        typer.Argument(help="The SQLAlchemy declarative base class or MetaData object used by the database to graph."),
     ] = None,
     replace_begin_tag: Annotated[
         str,

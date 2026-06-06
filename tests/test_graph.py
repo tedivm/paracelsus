@@ -81,6 +81,20 @@ def test_get_graph_string_with_include(package_path):
     assert "users ||--o{ posts" not in graph_string
 
 
+def test_get_graph_string_from_metadata(package_path):
+    """A target pointing directly at a MetaData object (SQLAlchemy Core) is used as-is."""
+    graph_string = get_graph_string(
+        base_class_path="example.core:metadata",
+        import_module=[],
+        include_tables=set(),
+        exclude_tables=set(),
+        python_dir=[package_path],
+        format="mermaid",
+        column_sort="key-based",
+    )
+    mermaid_assert(graph_string)
+
+
 @pytest.mark.parametrize("layout_arg", ["dagre", "elk"])
 def test_get_graph_string_with_layout(layout_arg, package_path):
     graph_string = get_graph_string(
