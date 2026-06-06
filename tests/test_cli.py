@@ -21,6 +21,16 @@ def test_graph(package_path: Path):
     mermaid_assert(result.stdout)
 
 
+def test_graph_from_metadata(package_path: Path):
+    result = runner.invoke(
+        app,
+        ["graph", "example.core:metadata", "--python-dir", str(package_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    mermaid_assert(result.stdout)
+
+
 @pytest.mark.parametrize("column_sort_arg", ["key-based", "preserve-order"])
 def test_graph_column_sort(package_path: Path, column_sort_arg: Literal["key-based"] | Literal["preserve-order"]):
     result = runner.invoke(

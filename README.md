@@ -8,6 +8,7 @@ Paracelsus generates Entity Relationship Diagrams by reading your SQLAlchemy mod
     - [Installation](#installation)
     - [Basic CLI Usage](#basic-cli-usage)
     - [Importing Models](#importing-models)
+    - [SQLAlchemy Core](#sqlalchemy-core)
     - [Include or Exclude tables](#include-or-exclude-tables)
     - [Specify Column Sort Order](#specify-column-sort-order)
     - [Omit Comments](#omit-comments)
@@ -75,6 +76,32 @@ This is equivalent to running this style of python import:
 ```python
 from example_app.models import *
 ```
+
+### SQLAlchemy Core
+
+Paracelsus also works with SQLAlchemy Core, where tables are defined against a `MetaData` object instead of a declarative base. Point the target at the `MetaData` object directly and Paracelsus will use it as-is.
+
+```python
+# example_app/tables.py
+import sqlalchemy as sa
+
+metadata = sa.MetaData()
+
+users = sa.Table(
+    "users",
+    metadata,
+    sa.Column("id", sa.Uuid, primary_key=True),
+    sa.Column("display_name", sa.String(100)),
+)
+```
+
+Then point Paracelsus at the `MetaData` object:
+
+```bash
+paracelsus graph example_app.tables:metadata
+```
+
+Importing the module that defines the `MetaData` is enough to register its tables, so `--import-module` is only needed for tables defined elsewhere. The `base` setting in `pyproject.toml` accepts a `MetaData` target in the same way.
 
 ### Include or Exclude tables
 

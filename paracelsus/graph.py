@@ -38,12 +38,14 @@ def get_graph_string(
     for dir in python_dir:
         sys.path.append(str(dir))
 
-    # Import the base class so the metadata class can be extracted from it.
-    # The metadata class is passed to the transformer.
-    module_path, class_name = base_class_path.split(":", 2)
+    # Import the target so the metadata can be extracted from it.
+    # The target may be a SQLAlchemy declarative base (use its `.metadata`) or a
+    # `MetaData` instance itself (SQLAlchemy Core), in which case it is used directly.
+    # The metadata is passed to the transformer.
+    module_path, attribute_name = base_class_path.split(":", 2)
     base_module = importlib.import_module(module_path)
-    base_class = getattr(base_module, class_name)
-    metadata = base_class.metadata
+    target = getattr(base_module, attribute_name)
+    metadata = target if isinstance(target, MetaData) else target.metadata
 
     # The modules holding the model classes have to be imported to get put in the metaclass model registry.
     # These modules aren't actually used in any way, so they are discarded.
